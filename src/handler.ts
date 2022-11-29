@@ -17,7 +17,7 @@ export async function handler(
 
   return {
     statusCode: 200,
-    headers: { 'content-type': 'image/webp' },
+    headers: { 'content-type': 'image/webp', 'cache-control': 'public, max-age=120' },
     body: Buffer.from('dummy').toString('base64'),
     isBase64Encoded: true,
   }

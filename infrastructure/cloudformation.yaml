@@ -12,6 +12,36 @@ Outputs:
     Value: !GetAtt LambdaUrl.FunctionUrl
 
 Resources:
+  OriginalImagesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-original-images
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+
+  ProcessedImagesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-processed-images
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -43,14 +73,14 @@ Resources:
         Variables:
           NODE_ENV: production
           NODE_OPTIONS: '--enable-source-maps'
-          SOURCE_BUCKET: 'todo'
-          PROCESSED_BUCKET: 'todo'
+          ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
+          PROCESSED_IMAGES_BUCKET: !Ref ProcessedImagesBucket
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref Lambda
-      FunctionUrlAuthType: 'NONE'
+      FunctionUrlAuthType: NONE
       Action: lambda:InvokeFunctionUrl
       Principal: '*'
 
@@ -68,7 +98,7 @@ Resources:
     Properties:
       Path: '/'
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -76,11 +106,16 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: S3-ReadAccess
+        - PolicyName: Read-Original-Images
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
                   - s3:GetObject
                 Resource:
-                  - arn:aws:s3:::some-bucket.example.com/*
+                  - !Sub arn:aws:s3:::${AWS::StackName}-original-images/*
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - !Sub arn:aws:s3:::${AWS::StackName}-processed-images/*
