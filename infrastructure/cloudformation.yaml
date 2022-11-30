@@ -55,7 +55,7 @@ Resources:
       FunctionName: !Ref AWS::StackName
       Description: Web Image Optimizer
       Runtime: nodejs18.x
-      Timeout: 3
+      Timeout: 30
       MemorySize: 1024
       Handler: lambda.handler
       Code:
@@ -114,6 +114,11 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub arn:aws:s3:::${AWS::StackName}-original-images/*
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:aws:s3:::${AWS::StackName}-original-images
               - Effect: Allow
                 Action:
                   - s3:PutObject

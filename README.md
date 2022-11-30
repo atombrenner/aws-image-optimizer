@@ -7,6 +7,11 @@ Works well with [focus point cropping](https://github.com/atombrenner/focus-crop
 
 - run `npm ci`
 
+## Caveats
+
+If you build this on a non-Linux environment, adjust the build process to include
+the correct native sharp and libvips library in the bundle. See `infrastructure/zip.ts`
+
 ## Commands
 
 - `npm test` executes tests with jest

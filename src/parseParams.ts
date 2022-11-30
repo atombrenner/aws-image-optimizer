@@ -1,6 +1,8 @@
 import { env } from './env'
 
-const pathPrefix = env('PATH_PREFIX', '/')
+const pathPrefix = '/image/' // env('PATH_PREFIX', '/')
+if (!pathPrefix.endsWith('/'))
+  throw Error(`PATH_PREFIX "${pathPrefix}" must end with a trailing slash "/"`)
 
 export type Params = {
   prefix: string
@@ -17,5 +19,10 @@ export type Params = {
 
 export const parseParams = (path: string) => {
   if (!path.startsWith(pathPrefix)) return undefined
-  return {}
+  const segments = path.substring(pathPrefix.length).split('/')
+  console.log('image/' + segments[0])
+  return {
+    originalKey: 'image/' + segments[0],
+    contentType: 'image/webp',
+  }
 }

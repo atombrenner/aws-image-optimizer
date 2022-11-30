@@ -1,6 +1,8 @@
 import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 import { parseParams } from './parseParams'
+import { processImage } from './processImage'
+import { loadOriginalImage, saveProcessedImage } from './s3'
 
 // AWS Lambda Function Urls are reusing types from APIGateway
 // but many fields are not used or filled with default values
@@ -22,40 +24,42 @@ export const handler = async (event: LambdaFunctionUrlEvent): Promise<LambdaFunc
   }
 }
 
+const cacheControl = 'public, max-age=2' // TODO: needs to be configurable
+
 export const handleRequest = async (method: string, path: string) => {
   if (!['GET', 'HEAD'].includes(method)) return methodNotAllowed
 
   const params = parseParams(path)
   if (!params) return badRequest
 
-  //const data = loadOriginalImage()
-  // if !data return 404
+  const original = await loadOriginalImage(params.originalKey)
+  if (!original) return notFound
 
-  // setupTransform
-  // if Transform fails return 500
+  const processed = await processImage(original, params)
+  await saveProcessedImage(path.substring(1), processed, params.contentType, cacheControl)
 
-  // saveProcessedImage(event.rawPath, contentType, cacheControl)
-  // return transformed Data
-
-  return {
-    statusCode: 200,
-    headers: { 'content-type': 'image/webp', 'cache-control': 'public, max-age=120' },
-    body: Buffer.from(path).toString('base64'),
-    isBase64Encoded: true,
-  }
+  const body = processed.toString('base64')
+  return body.length > 5 * 1024 * 1024 // can't return large response, but retry will be served from S3
+    ? { statusCode: 503, headers: { 'retry-after': '1', 'cache-control': 'no-cache, no-store' } }
+    : {
+        statusCode: 200,
+        headers: { 'content-type': params.contentType, 'cache-control': cacheControl },
+        body,
+        isBase64Encoded: true,
+      }
 }
 
-const response = (statusCode: number, body: string) => ({
+const textResponse = (statusCode: number, body: string) => ({
   statusCode,
   headers: {
     'content-type': 'text/plain',
-    'cache-control': 'public, max-age=120',
+    'cache-control': `public, max-age=${statusCode < 500 ? 300 : 60}`,
   },
   body,
   isBase64Encoded: false,
 })
 
-const badRequest = response(400, 'bad request')
-const notFound = response(404, 'not found')
-const methodNotAllowed = response(405, 'method not allowed')
-const internalServerError = response(500, 'internal server error')
+const badRequest = textResponse(400, 'bad request')
+const notFound = textResponse(404, 'not found')
+const methodNotAllowed = textResponse(405, 'method not allowed')
+const internalServerError = textResponse(500, 'internal server error')
