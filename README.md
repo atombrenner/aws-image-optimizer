@@ -9,7 +9,7 @@ Works well with [focus point cropping](https://github.com/atombrenner/focus-crop
 
 ## Commands
 
-- `npm test` executes test with jest
+- `npm test` executes tests with jest
 - `npm run build` creates ./dist/lambda.js bundle
 - `npm run zip` creates the ./dist/lambda.zip from ./dist/lambda.js and ./dist/lambda.js.map
 - `npm run dist` runs all of the above steps
@@ -20,6 +20,7 @@ Works well with [focus point cropping](https://github.com/atombrenner/focus-crop
 ## Tools
 
 - [sharp](https://github.com/lovell/sharp) high performance image processing
+- [ts-node](https://github.com/TypeStrong/ts-node) and [ts-node-dev](https://github.com/wclr/ts-node-dev) for running lambda locally
 - [esbuild](https://esbuild.github.io/) super fast Typescript transpiler and bundler
 - [Jest](https://jestjs.io/) for testing
 - [Babel](https://babeljs.io/) as a Jest transformer

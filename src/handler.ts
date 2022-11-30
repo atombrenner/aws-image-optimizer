@@ -1,6 +1,5 @@
 import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
-import { env } from './env'
 import { parseParams } from './parseParams'
 
 // AWS Lambda Function Urls are reusing types from APIGateway

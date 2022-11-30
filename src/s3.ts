@@ -11,7 +11,6 @@ export const loadOriginalImage = async (path: string): Promise<Uint8Array | unde
     new GetObjectCommand({
       Bucket: originalImagesBucket,
       Key: path,
-      Range: 'basd',
     })
   )
   if (!response.Body) return undefined

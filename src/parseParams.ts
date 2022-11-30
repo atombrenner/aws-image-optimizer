@@ -17,4 +17,5 @@ export type Params = {
 
 export const parseParams = (path: string) => {
   if (!path.startsWith(pathPrefix)) return undefined
+  return {}
 }
