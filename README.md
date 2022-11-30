@@ -11,6 +11,7 @@ Works well with [focus point cropping](https://github.com/atombrenner/focus-crop
 
 If you build this on a non-Linux environment, adjust the build process to include
 the correct native sharp and libvips library in the bundle. See `infrastructure/zip.ts`
+and package.json prezip script.
 
 ## Commands
 
@@ -21,6 +22,20 @@ the correct native sharp and libvips library in the bundle. See `infrastructure/
 - `npm run stack` creates or updates the CloudFormation stack
 - `npm run deploy` used to deploy ./dist/lambda.zip to the created lambda function
 - `npm start` will start the lambda function locally
+
+## Configuration
+
+The following environment variables must be specified. For `npm start` it is recommended
+to create a `.env` file and also configure AWS credentials
+
+| Environment Variable      | Explanation                                                   |
+| ------------------------- | ------------------------------------------------------------- |
+| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images                                 |
+| `PROCESSED_IMAGES_BUCKET` | S3 bucket to store processed images                           |
+| `IMAGE_PATH`              | e.g. `/` or `/path/to/image`, the path before the image id    |
+| `IMAGE_QUALITY`           | between 50..100, 80 is the recommended quality                |
+| `CACHE_CONTROL`           | the Cache-Control header to set for processed images          |
+| `AWS_*`                   | to configure AWS credentials and region for local development |
 
 ## Tools
 

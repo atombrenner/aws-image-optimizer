@@ -1,5 +1,6 @@
 import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
+import { env } from './env'
 import { parseParams } from './parseParams'
 import { processImage } from './processImage'
 import { loadOriginalImage, saveProcessedImage } from './s3'
@@ -24,7 +25,7 @@ export const handler = async (event: LambdaFunctionUrlEvent): Promise<LambdaFunc
   }
 }
 
-const cacheControl = 'public, max-age=2' // TODO: needs to be configurable
+const cacheControl = env('CACHE_CONTROL')
 
 export const handleRequest = async (method: string, path: string) => {
   if (!['GET', 'HEAD'].includes(method)) return methodNotAllowed

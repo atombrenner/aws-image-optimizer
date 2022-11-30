@@ -72,9 +72,12 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: production
-          NODE_OPTIONS: '--enable-source-maps'
+          NODE_OPTIONS: --enable-source-maps
           ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
           PROCESSED_IMAGES_BUCKET: !Ref ProcessedImagesBucket
+          CACHE_CONTROL: public, max-age=31536000
+          IMAGE_PATH: image/
+          IMAGE_QUALITY: '80'
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission

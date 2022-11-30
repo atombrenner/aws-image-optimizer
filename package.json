@@ -5,8 +5,8 @@
   "license": "GPL-3.0-only",
   "repository": "github:atombrenner/aws-image-optimizer",
   "scripts": {
-    "test": "jest",
-    "start": "ts-node-dev -T src/start.ts",
+    "test": "DOTENV_CONFIG_PATH=.env.test jest --setupFiles=dotenv/config",
+    "start": "ts-node-dev -r dotenv/config -T src/start.ts",
     "clean": "rm -rf ./dist",
     "build": "esbuild --bundle --minify --keep-names --sourcemap --sources-content=false --target=node18 --platform=node --external:sharp --outfile=dist/lambda.js src/handler.ts",
     "prezip": "cd node_modules/sharp && npm i --omit=dev --prefer=offline --no-audit",
@@ -41,6 +41,7 @@
     "adm-zip": "^0.5.9",
     "babel-jest": "^29.3.1",
     "babel-loader": "^9.1.0",
+    "dotenv": "^16.0.3",
     "esbuild": "^0.15.16",
     "husky": "^8.0.1",
     "jest": "^29.3.1",

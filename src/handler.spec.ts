@@ -2,7 +2,7 @@ import { handler, handleRequest, LambdaFunctionUrlEvent } from './handler'
 
 describe('handler', () => {
   it('should catch all exceptions', async () => {
-    const response = await handler({ rawPath: '/image/id' } as LambdaFunctionUrlEvent)
+    const response = await handler({} as LambdaFunctionUrlEvent)
     expect(response.statusCode).toEqual(500)
   })
 })
