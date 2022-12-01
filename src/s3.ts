@@ -6,12 +6,12 @@ const processedImagesBucket = env('PROCESSED_IMAGES_BUCKET')
 
 const s3 = new S3Client({})
 
-export const loadOriginalImage = async (key: string): Promise<Uint8Array | undefined> => {
+export const loadOriginalImage = async (path: string): Promise<Uint8Array | undefined> => {
   try {
     const response = await s3.send(
       new GetObjectCommand({
         Bucket: originalImagesBucket,
-        Key: key,
+        Key: path.substring(1),
       })
     )
     return response.Body && response.Body.transformToByteArray()
@@ -22,7 +22,7 @@ export const loadOriginalImage = async (key: string): Promise<Uint8Array | undef
 }
 
 export const saveProcessedImage = async (
-  key: string,
+  path: string,
   image: Buffer,
   contentType: string,
   cacheControl: string
@@ -30,7 +30,7 @@ export const saveProcessedImage = async (
   await s3.send(
     new PutObjectCommand({
       Bucket: processedImagesBucket,
-      Key: key,
+      Key: path.substring(1),
       Body: image,
       ContentType: contentType,
       CacheControl: cacheControl,

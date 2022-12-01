@@ -1,7 +1,7 @@
 import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 import { env } from './env'
-import { parseParams } from './parseParams'
+import { parsePath } from './parsePath'
 import { processImage } from './processImage'
 import { loadOriginalImage, saveProcessedImage } from './s3'
 
@@ -30,21 +30,23 @@ const cacheControl = env('CACHE_CONTROL')
 export const handleRequest = async (method: string, path: string) => {
   if (!['GET', 'HEAD'].includes(method)) return methodNotAllowed
 
-  const params = parseParams(path)
+  const { originalPath, params } = parsePath(path)
+  if (!originalPath) return notFound
   if (!params) return badRequest
 
-  const original = await loadOriginalImage(params.originalKey)
+  const original = await loadOriginalImage(originalPath)
   if (!original) return notFound
 
   const processed = await processImage(original, params)
-  await saveProcessedImage(path.substring(1), processed, params.contentType, cacheControl)
+  const contentType = `image/${params.type}`
+  await saveProcessedImage(path, processed, contentType, cacheControl)
 
   const body = processed.toString('base64')
   return body.length > 5 * 1024 * 1024 // can't return large response, but retry will be served from S3
     ? { statusCode: 503, headers: { 'retry-after': '1', 'cache-control': 'no-cache, no-store' } }
     : {
         statusCode: 200,
-        headers: { 'content-type': params.contentType, 'cache-control': cacheControl },
+        headers: { 'content-type': contentType, 'cache-control': cacheControl },
         body,
         isBase64Encoded: true,
       }
