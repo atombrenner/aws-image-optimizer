@@ -5,6 +5,15 @@ describe('handler', () => {
     const response = await handler({} as LambdaFunctionUrlEvent)
     expect(response.statusCode).toEqual(500)
   })
+
+  it('should return forbidden if x-security-token is wrong', async () => {
+    const response = await handler({
+      requestContext: { http: { method: 'GET' } },
+      rawPath: '/path/to/image/UUID',
+      headers: { 'x-security-token': 'invalid' } as LambdaFunctionUrlEvent['headers'],
+    } as LambdaFunctionUrlEvent)
+    expect(response.statusCode).toEqual(403)
+  })
 })
 
 describe('handleRequest', () => {

@@ -1,17 +1,18 @@
 import { GetObjectCommand, PutObjectCommand, S3Client, NoSuchKey } from '@aws-sdk/client-s3'
 import { env } from './env'
 
-const originalImagesBucket = env('ORIGINAL_IMAGES_BUCKET')
-const processedImagesBucket = env('PROCESSED_IMAGES_BUCKET')
+const originalBucket = env('ORIGINAL_BUCKET')
+const processedBucket = env('PROCESSED_BUCKET')
+const originalKeyPrefix = env('ORIGINAL_KEY_PREFIX')
 
 const s3 = new S3Client({})
 
-export const loadOriginalImage = async (path: string): Promise<Uint8Array | undefined> => {
+export const loadOriginalImage = async (id: string): Promise<Uint8Array | undefined> => {
   try {
     const response = await s3.send(
       new GetObjectCommand({
-        Bucket: originalImagesBucket,
-        Key: path.substring(1),
+        Bucket: originalBucket,
+        Key: originalKeyPrefix + id,
       })
     )
     return response.Body && response.Body.transformToByteArray()
@@ -29,7 +30,7 @@ export const saveProcessedImage = async (
 ) => {
   await s3.send(
     new PutObjectCommand({
-      Bucket: processedImagesBucket,
+      Bucket: processedBucket,
       Key: path.substring(1),
       Body: image,
       ContentType: contentType,

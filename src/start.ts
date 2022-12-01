@@ -1,6 +1,9 @@
 import { createServer, IncomingMessage, OutgoingHttpHeaders, ServerResponse } from 'http'
 import { log } from '@atombrenner/log-json'
 import { handler, LambdaFunctionUrlEvent } from './handler'
+import { env } from './env'
+
+const securityToken = env('SECURITY_TOKEN')
 
 function writeTextResponse(res: ServerResponse, status: number, text: string) {
   writeResponse(res, status, text, 'text/plain')
@@ -11,12 +14,13 @@ function writeResponse(res: ServerResponse, status: number, body: any, type: str
   res.end(body)
 }
 
-function makeLambdaFunctionUrlEvent(req: IncomingMessage): LambdaFunctionUrlEvent {
+function makeLambdaFunctionUrlEvent(req: IncomingMessage) {
   if (!req.url) throw Error('missing url')
   const url = new URL(req.url!, 'https://examples.com')
   return {
     requestContext: { http: { method: req.method } },
     rawPath: url.pathname,
+    headers: { 'x-security-token': securityToken } as LambdaFunctionUrlEvent['headers'],
     rawQueryString: '',
   } as LambdaFunctionUrlEvent
 }
@@ -33,7 +37,10 @@ function handleNodeRequest(req: IncomingMessage, res: ServerResponse) {
   }
 }
 
-const shutdown = () => process.exit(0)
+function shutdown() {
+  process.exit(0)
+}
+
 process.on('SIGTERM', shutdown)
 process.on('SIGINT', shutdown)
 process.on('unhandledRejection', (err, promise) => {

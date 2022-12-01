@@ -5,6 +5,8 @@ import { parsePath } from './parsePath'
 import { processImage } from './processImage'
 import { loadOriginalImage, saveProcessedImage } from './s3'
 
+const securityToken = env('SECURITY_TOKEN')
+
 // AWS Lambda Function Urls are reusing types from APIGateway
 // but many fields are not used or filled with default values
 // see: https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html
@@ -18,6 +20,13 @@ export const handler = async (event: LambdaFunctionUrlEvent): Promise<LambdaFunc
   try {
     const method = event.requestContext.http.method
     const path = event.rawPath
+    log.info(`${method} ${path}`)
+
+    if (event.headers['x-security-token'] !== securityToken) {
+      log.warn('wrong or missing security token')
+      return forbidden
+    }
+
     return await handleRequest(method, path)
   } catch (err) {
     log.error(err)
@@ -27,29 +36,32 @@ export const handler = async (event: LambdaFunctionUrlEvent): Promise<LambdaFunc
 
 const cacheControl = env('CACHE_CONTROL')
 
-export const handleRequest = async (method: string, path: string) => {
+export const handleRequest = async (
+  method: string,
+  path: string
+): Promise<LambdaFunctionUrlResult> => {
   if (!['GET', 'HEAD'].includes(method)) return methodNotAllowed
 
-  const { originalPath, params } = parsePath(path)
-  if (!originalPath) return notFound
-  if (!params) return badRequest
+  const { id, error, ...params } = parsePath(path)
+  if (!id) return notFound
+  if (error) return badRequest
 
-  const original = await loadOriginalImage(originalPath)
+  const original = await loadOriginalImage(id)
   if (!original) return notFound
 
   const processed = await processImage(original, params)
   const contentType = `image/${params.type}`
+  const headers = { 'content-type': contentType, 'cache-control': cacheControl }
   await saveProcessedImage(path, processed, contentType, cacheControl)
 
+  if (method === 'HEAD') return { statusCode: 200, headers }
+
   const body = processed.toString('base64')
-  return body.length > 5 * 1024 * 1024 // can't return large response, but retry will be served from S3
-    ? { statusCode: 503, headers: { 'retry-after': '1', 'cache-control': 'no-cache, no-store' } }
-    : {
-        statusCode: 200,
-        headers: { 'content-type': contentType, 'cache-control': cacheControl },
-        body,
-        isBase64Encoded: true,
-      }
+
+  // can't return large response via lambda, but retry will be served from S3
+  if (body.length > 5 * 1024 * 1024) return retryLater
+
+  return { statusCode: 200, headers, body, isBase64Encoded: true }
 }
 
 const textResponse = (statusCode: number, body: string) => ({
@@ -63,6 +75,11 @@ const textResponse = (statusCode: number, body: string) => ({
 })
 
 const badRequest = textResponse(400, 'bad request')
+const forbidden = textResponse(403, 'forbidden')
 const notFound = textResponse(404, 'not found')
 const methodNotAllowed = textResponse(405, 'method not allowed')
 const internalServerError = textResponse(500, 'internal server error')
+const retryLater = {
+  statusCode: 503,
+  headers: { 'retry-after': '1', 'cache-control': 'no-cache, no-store' },
+}

@@ -1,10 +1,8 @@
 ---
 Description: Web Image Optimizer
 Parameters:
-  SomeParameter:
+  SecurityToken:
     Type: String
-  # Version:
-  #   Type: String
 
 Outputs:
   LambdaUrl:
@@ -55,8 +53,8 @@ Resources:
       FunctionName: !Ref AWS::StackName
       Description: Web Image Optimizer
       Runtime: nodejs18.x
-      Timeout: 30
-      MemorySize: 1024
+      Timeout: 10
+      MemorySize: 2048 # the more memory the more CPU power
       Handler: lambda.handler
       Code:
         ZipFile: 'placeholder - do not change'
@@ -71,13 +69,15 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
-          NODE_ENV: production
-          NODE_OPTIONS: --enable-source-maps
-          ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
-          PROCESSED_IMAGES_BUCKET: !Ref ProcessedImagesBucket
-          CACHE_CONTROL: public, max-age=31536000
-          IMAGE_PATH: image/
+          NODE_ENV: 'production'
+          NODE_OPTIONS: '--enable-source-maps'
+          ORIGINAL_BUCKET: !Ref OriginalImagesBucket
+          ORIGINAL_KEY_PREFIX: 'image/'
+          PROCESSED_BUCKET: !Ref ProcessedImagesBucket
+          CACHE_CONTROL: 'public, max-age=31536000'
+          IMAGE_PATH: '/image/''
           IMAGE_QUALITY: '80'
+          SECURITY_TOKEN: 'secret'
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -91,9 +91,6 @@ Resources:
     Type: AWS::Lambda::Url
     Properties:
       AuthType: NONE
-      Cors:
-        MaxAge: 3600
-        AllowOrigins: ['*']
       TargetFunctionArn: !Ref Lambda
 
   LambdaExecutionRole:

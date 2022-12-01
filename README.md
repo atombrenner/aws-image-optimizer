@@ -28,14 +28,16 @@ and package.json prezip script.
 The following environment variables must be specified. For `npm start` it is recommended
 to create a `.env` file and also configure AWS credentials
 
-| Environment Variable      | Explanation                                                   |
-| ------------------------- | ------------------------------------------------------------- |
-| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images                                 |
-| `PROCESSED_IMAGES_BUCKET` | S3 bucket to store processed images                           |
-| `IMAGE_PATH`              | e.g. `/` or `/path/to/image`, the path before the image id    |
-| `IMAGE_QUALITY`           | between 50..100, 80 is the recommended quality                |
-| `CACHE_CONTROL`           | the Cache-Control header to set for processed images          |
-| `AWS_*`                   | to configure AWS credentials and region for local development |
+| Environment Variable  | Explanation                                                           |
+| --------------------- | --------------------------------------------------------------------- |
+| `ORIGINAL_BUCKET`     | S3 bucket with orginal images                                         |
+| `ORIGINAL_KEY_PREFIX` | e.g. `image/` S3 key prefix for loading originalmage                  |
+| `PROCESSED_BUCKET`    | S3 bucket to store processed images                                   |
+| `IMAGE_PATH`          | e.g. `/` or `/path/to/image/`, the path before the image id           |
+| `IMAGE_QUALITY`       | between 50..100, 80 is the recommended quality                        |
+| `CACHE_CONTROL`       | the Cache-Control header to set for processed images                  |
+| `SECURITY_TOKEN`      | configured in Cloudfront to prevent access without Cloudfront         |
+| `AWS_*`               | configure AWS SDK, e.g. credentials or region, local development only |
 
 ## Tools
 

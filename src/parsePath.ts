@@ -7,6 +7,7 @@ if (!imagePath.endsWith('/') || !imagePath.startsWith('/'))
 
 export type Params = ProcessingParams & {
   id?: string
+  error?: string // future use: if we want strict validation we return an error string here
 }
 
 // parse params from path
@@ -20,12 +21,7 @@ export const parsePath = (path: string): Params => {
   const type = imageTypes.includes(segments[1]) ? segments[1] : undefined
   const { width, height } = parseDimensions(segments[2])
 
-  return {
-    id,
-    type,
-    width,
-    height,
-  }
+  return { id, type, width, height }
 }
 
 const parseDimensions = (dimensions: string) => {
