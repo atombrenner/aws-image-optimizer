@@ -19,7 +19,6 @@ export type ProcessingParams = {
 
 export const processImage = async (image: Uint8Array, params: ProcessingParams) => {
   const sharpImage = sharp(image)
-  sharpImage.rotate() // normalize rotation
   const size = getImageSize(await sharpImage.metadata())
   const {
     width = params.height ? 0 : 320,
@@ -31,6 +30,7 @@ export const processImage = async (image: Uint8Array, params: ProcessingParams) 
 
   const ratio = width && height ? width / height : size.width / size.height
   const source = region(focusCrop(ratio, focus, crop), size)
+  sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(limitSize(width, height, ratio, source))
   sharpImage[type]({ quality }) // convert image format
@@ -39,8 +39,8 @@ export const processImage = async (image: Uint8Array, params: ProcessingParams) 
 
 const getImageSize = ({ width, height, orientation }: Metadata) => {
   if (!width || !height) throw Error('original image has no size')
-  if (orientation) throw Error('orientation not implemented')
-  return { width, height }
+  // if present, orientation is 1 2 3 4 5 6 7 8 and describes rotation and mirroring, see https://exiftool.org/TagNames/EXIF.html
+  return orientation && orientation <= 4 ? { width, height } : { width: height, height: width }
 }
 
 const defaultFocus = (size: Size) => ({
