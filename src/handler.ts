@@ -43,24 +43,21 @@ export const handleRequest = async (
   if (!['GET', 'HEAD'].includes(method)) return methodNotAllowed
 
   const { id, error, ...params } = parsePath(path)
-  if (!id) return notFound
   if (error) return badRequest
+  if (!id) return notFound
 
   const original = await loadOriginalImage(id)
   if (!original) return notFound
 
-  const processed = await processImage(original, params)
-  const contentType = `image/${params.type}`
+  const { processed, type } = await processImage(original, params)
+  const contentType = `image/${type}`
   const headers = { 'content-type': contentType, 'cache-control': cacheControl }
-  await saveProcessedImage(path, processed, contentType, cacheControl)
+  const save = saveProcessedImage(path, processed, contentType, cacheControl)
+  const body = processed.toString('base64')
+  await save
 
   if (method === 'HEAD') return { statusCode: 200, headers }
-
-  const body = processed.toString('base64')
-
-  // can't return large response via lambda, but retry will be served from S3
-  if (body.length > 5 * 1024 * 1024) return retryLater
-
+  if (body.length > 5 * 1024 * 1024) return retryLater // can't return large response via lambda, later requests will be served from S3
   return { statusCode: 200, headers, body, isBase64Encoded: true }
 }
 

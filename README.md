@@ -1,7 +1,7 @@
-# AWS Web Image Optimizer
+# AWS Serverless Image Optimizer
 
-Converts and crops large images to web-optimized formats like webp or avif in one step to reduce image size.
-Works well with [focus point cropping](https://github.com/atombrenner/focus-crop-react).
+Convert and crop large images to optimized formats like webp or avif to reduce image size.
+Works well with [focus point cropping](https://github.com/atombrenner/focus-crop-react) to arbitrary aspect ratios.
 
 ## Prerequisites
 
