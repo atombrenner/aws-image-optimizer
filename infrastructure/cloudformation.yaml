@@ -111,7 +111,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: Read-Original-Images
+        - PolicyName: ImageAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
