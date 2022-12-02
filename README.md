@@ -3,15 +3,19 @@
 Convert and crop large images to optimized formats like webp or avif to reduce image size.
 Works well with [focus point cropping](https://github.com/atombrenner/focus-crop-react) to arbitrary aspect ratios.
 
+## Architecture
+
+The architecture is very similar to what is written in this [AWS blog post](https://aws.amazon.com/blogs/networking-and-content-delivery/image-optimization-using-amazon-cloudfront-and-aws-lambda/).
+
 ## Prerequisites
 
 - run `npm ci`
 
 ## Caveats
 
-If you build this on a non-Linux environment, adjust the build process to include
-the correct native sharp and libvips library in the bundle. See `infrastructure/zip.ts`
-and package.json prezip script.
+If you build on a non-Linux environment, adjust the build process to include
+the correct native sharp and libvips library in the lambda artifact.
+See `infrastructure/zip.ts` and package.json prezip script.
 
 ## Commands
 

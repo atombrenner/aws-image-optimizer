@@ -39,6 +39,11 @@ Resources:
         IgnorePublicAcls: true
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: Housekeeping
+            Status: Enabled
+            ExpirationInDays: 300
 
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -75,7 +80,7 @@ Resources:
           ORIGINAL_KEY_PREFIX: 'image/'
           PROCESSED_BUCKET: !Ref ProcessedImagesBucket
           CACHE_CONTROL: 'public, max-age=31536000'
-          IMAGE_PATH: '/image/''
+          IMAGE_PATH: '/image/'
           IMAGE_QUALITY: '80'
           SECURITY_TOKEN: 'secret'
 
