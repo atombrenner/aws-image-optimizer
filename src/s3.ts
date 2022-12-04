@@ -3,7 +3,7 @@ import { env } from './env'
 
 const originalImagesBucket = env('ORIGINAL_IMAGES_BUCKET')
 const optimizedImagesBucket = env('OPTIMIZED_IMAGES_BUCKET')
-const originalKeyPrefix = env('ORIGINAL_KEY_PREFIX')
+const originalImageKey = env('ORIGINAL_IMAGE_KEY')
 
 const s3 = new S3Client({})
 
@@ -12,7 +12,7 @@ export const loadOriginalImage = async (id: string): Promise<Uint8Array | undefi
     const response = await s3.send(
       new GetObjectCommand({
         Bucket: originalImagesBucket,
-        Key: originalKeyPrefix + id,
+        Key: originalImageKey.replace('${ID}', id),
       })
     )
     return response.Body && response.Body.transformToByteArray()

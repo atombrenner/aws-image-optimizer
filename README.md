@@ -35,22 +35,23 @@ See `infrastructure/zip.ts` and package.json prezip script.
 The following environment variables must be specified. For `npm start` it is recommended
 to create a `.env` file and also configure AWS credentials
 
-| Environment Variable      | Explanation                                                           |
-| ------------------------- | --------------------------------------------------------------------- |
-| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images (read only access)                      |
-| `OPTIMIZED_IMAGES_BUCKET` | S3 bucket with optimized images (read write access)                   |
-| `ORIGINAL_KEY_PREFIX`     | e.g. `image/` S3 key prefix for loading originalmage                  |
-| `IMAGE_PATH`              | e.g. `/` or `/path/to/image/`, the path before the image id           |
-| `IMAGE_QUALITY`           | between 50..100, 80 is the recommended quality                        |
-| `CACHE_CONTROL`           | the Cache-Control header to set for optimized images                  |
-| `SECURITY_TOKEN`          | configured in Cloudfront to prevent access without Cloudfront         |
-| `AWS_*`                   | configure AWS SDK, e.g. credentials or region, local development only |
+| Environment Variable      | Explanation                                                                |
+| ------------------------- | -------------------------------------------------------------------------- |
+| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images (read only access)                           |
+| `OPTIMIZED_IMAGES_BUCKET` | S3 bucket with optimized images (read write access)                        |
+| `ORIGINAL_IMAGE_KEY`      | S3 key pattern for the original image, e.g. `image/${ID}/original`         |
+| `IMAGE_PATH_ID_PATTERN`   | regex to extract path prefix and image id, e.g. `^/path/to/image/([^/]+)/` |
+| `IMAGE_QUALITY`           | default image quality between 50..100, 80 is the recommended quality       |
+| `CACHE_CONTROL`           | the Cache-Control header to set for optimized images                       |
+| `SECURITY_TOKEN`          | configured in Cloudfront to prevent access without Cloudfront              |
+| `SIGNED_URL_SECRET`       | secret for verifying signed urls                                           |
+| `AWS\_\*`                 | configure AWS SDK, e.g. credentials or region, local development only      |
 
 ## Tools
 
-- [sharp](https://github.com/lovell/sharp) high performance image processing
+- [sharp](https://github.com/lovell/sharp) high-performance image processing
 - [ts-node](https://github.com/TypeStrong/ts-node) and [ts-node-dev](https://github.com/wclr/ts-node-dev) for running lambda locally
-- [esbuild](https://esbuild.github.io/) super fast Typescript transpiler and bundler
+- [esbuild](https://esbuild.github.io/) fast Typescript transpiler and bundler
 - [Jest](https://jestjs.io/) for testing
 - [Babel](https://babeljs.io/) as a Jest transformer
 - [Prettier](https://prettier.io/) for code formatting
