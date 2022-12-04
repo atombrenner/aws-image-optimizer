@@ -25,11 +25,11 @@ Resources:
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
 
-  ProcessedImagesBucket:
+  OptimizedImagesBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub ${AWS::StackName}-processed-images
+      BucketName: !Sub ${AWS::StackName}-optimized-images
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -78,7 +78,7 @@ Resources:
           NODE_OPTIONS: '--enable-source-maps'
           ORIGINAL_BUCKET: !Ref OriginalImagesBucket
           ORIGINAL_KEY_PREFIX: 'image/'
-          PROCESSED_BUCKET: !Ref ProcessedImagesBucket
+          PROCESSED_BUCKET: !Ref OptimizedImagesBucket
           CACHE_CONTROL: 'public, max-age=31536000'
           IMAGE_PATH: '/image/'
           IMAGE_QUALITY: '80'
@@ -118,14 +118,9 @@ Resources:
                 Action:
                   - s3:GetObject
                 Resource:
-                  - !Sub arn:aws:s3:::${AWS::StackName}-original-images/*
-              - Effect: Allow
-                Action:
-                  - s3:ListBucket
-                Resource:
-                  - !Sub arn:aws:s3:::${AWS::StackName}-original-images
+                  - !Sub ${OriginalImagesBucket.Arn}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
                 Resource:
-                  - !Sub arn:aws:s3:::${AWS::StackName}-processed-images/*
+                  - !Sub ${OptimizedImagesBucket.Arn}/*
