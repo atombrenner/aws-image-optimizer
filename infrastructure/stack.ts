@@ -13,8 +13,7 @@ async function main() {
 
   // access stack outputs
   const outputs: Record<string, string> = await stack.getOutputs()
-  console.log()
-  console.log(`LambdaUrl: ${outputs.LambdaUrl}`)
+  console.dir(outputs)
 }
 
 main().catch((err) => {

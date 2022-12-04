@@ -1,13 +1,14 @@
 ---
-Description: Web Image Optimizer
+Description: Image Optimizer
 Parameters:
   SecurityToken:
     Type: String
 
 Outputs:
   LambdaUrl:
-    Description: The HTTPS endpoint of the lambda function
     Value: !GetAtt LambdaUrl.FunctionUrl
+  CloudFrontDomain:
+    Value: !GetAtt CloudFrontDistribution.DomainName
 
 Resources:
   OriginalImagesBucket:
@@ -44,6 +45,21 @@ Resources:
           - Id: Housekeeping
             Status: Enabled
             ExpirationInDays: 300
+
+  OptimizedImagesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OptimizedImagesBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !Sub ${OptimizedImagesBucket.Arn}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringLike:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution.Id}
 
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -124,3 +140,83 @@ Resources:
                   - s3:PutObject
                 Resource:
                   - !Sub ${OptimizedImagesBucket.Arn}/*
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${AWS::StackName}
+        Enabled: true
+        PriceClass: PriceClass_100
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - DELETE
+            - GET
+            - HEAD
+            - OPTIONS
+            - PATCH
+            - POST
+            - PUT
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed CachingOptimized Policy, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html#managed-cache-caching-optimized
+          TargetOriginId: example-origin
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: '/image/*'
+            Compress: false
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed CachingOptimized Policy, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html#managed-cache-caching-optimized
+            TargetOriginId: image-optimizer-group
+            ViewerProtocolPolicy: redirect-to-https
+
+        Origins:
+          - Id: optimized-images-bucket
+            DomainName: !GetAtt OptimizedImagesBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: '' # empty string because we use OriginAccessControl
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+          - Id: image-optimizer-lambda
+            DomainName: # parse DomainName from FunctionUrl which looks like 'https://12341232.lambda-url.on.aws/'
+              !Select [2, !Split ['/', !Select [1, !Split [':', !GetAtt LambdaUrl.FunctionUrl]]]]
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+            OriginCustomHeaders:
+              - HeaderName: x-security-token
+                HeaderValue: secret
+          - Id: example-origin
+            DomainName: example.com
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+
+        OriginGroups:
+          Quantity: 1
+          Items:
+            - Id: image-optimizer-group
+              FailoverCriteria:
+                StatusCodes:
+                  Quantity: 2
+                  Items: [403, 404] # S3 will return 403 instead of 404 when s3:ListBucket permission is not given
+              Members:
+                Quantity: 2
+                Items:
+                  - OriginId: optimized-images-bucket
+                  - OriginId: image-optimizer-lambda
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub ${AWS::StackName}
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
