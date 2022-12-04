@@ -78,10 +78,10 @@ Resources:
           NODE_OPTIONS: '--enable-source-maps'
           ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
           OPTIMIZED_IMAGES_BUCKET: !Ref OptimizedImagesBucket
-          ORIGINAL_KEY_PREFIX: 'image/'
-          CACHE_CONTROL: 'public, max-age=31536000'
-          IMAGE_PATH: '/image/'
+          ORIGINAL_IMAGE_KEY: 'image/${ID}'
+          IMAGE_PATH_ID_PATTERN: '^/image/([^/]+)'
           IMAGE_QUALITY: '80'
+          CACHE_CONTROL: 'public, max-age=31536000'
           SECURITY_TOKEN: 'secret'
 
   LambdaInvokePermission:
