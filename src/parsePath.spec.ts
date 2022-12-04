@@ -1,8 +1,7 @@
 import { parsePath } from './parsePath'
 
-// all transformation information is encoded in the image path
-// Example: /path/to/image/45-a34fasd-4711/avif/400x300/342,344/434,34-234,234/
-//          /$imagePath/$id/$format/$dimension/$crop
+// parse params from path
+// example: /path/to/image/uuid/webp/300x400/fp=200,100/crop=10,20,400,540
 
 describe('parsePath', () => {
   it.each(['/path/to/image/UUID', '/path/to/image/UUID/', '/path/to/image/UUID/400x300'])(
@@ -30,8 +29,9 @@ describe('parsePath', () => {
     ['webp', '/path/to/image/UUID/webp/'],
     ['jpeg', '/path/to/image/UUID/jpeg/400x300'],
   ])('should extract image type %p from from path %p', (expectedType, path) => {
-    const { type } = parsePath(path)
+    const { type, error } = parsePath(path)
     expect(type).toEqual(expectedType)
+    expect(error).toBeUndefined()
   })
 
   it.each([
@@ -41,17 +41,25 @@ describe('parsePath', () => {
     [{ width: 400, height: 300 }, '/path/to/image/UUID/jpeg/400x300'],
     [{}, '/path/to/image/UUID/jpeg'],
   ])('should extract dimensions %p from from path %p', (expectedDimension, path) => {
-    const { width, height } = parsePath(path)
+    const { width, height, error } = parsePath(path)
     expect({ width, height }).toEqual(expectedDimension)
+    expect(error).toBeUndefined()
   })
 
   it('should extract focus point', () => {
-    const { focus } = parsePath('/path/to/image/UUID/fp=200,100')
+    const { focus, error } = parsePath('/path/to/image/UUID/fp=200,100')
     expect(focus).toEqual({ x: 200, y: 100 })
+    expect(error).toBeUndefined()
   })
 
   it('should extract crop rectangle', () => {
-    const { crop } = parsePath('/path/to/image/UUID/crop=10,20,30,40')
+    const { crop, error } = parsePath('/path/to/image/UUID/fp=200,100/crop=10,20,30,40')
     expect(crop).toEqual({ x: 10, y: 20, width: 30, height: 40 })
+    expect(error).toBeUndefined()
+  })
+
+  it('should ignore empty segments', () => {
+    const params = parsePath('/path/to/image/UUID/fp=200,100///100x200/')
+    expect(params).toEqual({ id: 'UUID', focus: { x: 200, y: 100 }, width: 100, height: 200 })
   })
 })

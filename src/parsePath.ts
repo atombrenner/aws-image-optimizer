@@ -1,9 +1,9 @@
 import { env } from './env'
 import { isImageType, OptimizingParams } from './optimizeImage'
 
-const imagePath = env('IMAGE_PATH')
-if (!imagePath.endsWith('/') || !imagePath.startsWith('/'))
-  throw Error(`IMAGE_PATH "${imagePath}" must start and end with a trailing slash "/"`)
+// IMAGE_ID_PATTERN should match starting and trailing slash.
+// Because it is hard to verify this in the pattern itself we do it at runtime
+const pathImageIdPattern = new RegExp(env('IMAGE_PATH_ID_PATTERN'))
 
 export type PathParams = OptimizingParams & {
   id?: string
@@ -14,12 +14,15 @@ export type PathParams = OptimizingParams & {
 // example: /path/to/image/uuid/webp/300x400/fp=200,100/crop=10,20,400,540
 
 export const parsePath = (path: string): PathParams => {
-  if (!path.startsWith(imagePath)) return { error: 'noPath' }
+  const match = path.match(pathImageIdPattern)
+  if (!match) return { error: 'missing image id' }
+  // if (!path.startsWith(match[0]))
+  //   throw Error('IMAGE_PATH_ID_PATTERN must match leading and trailing slash')
 
-  const segments = path.substring(imagePath.length).split('/')
-  const id = segments.shift() // first segment must be the image id
+  const id = match[1] // first group must be the image id
+  const segments = path.substring(match[0].length).split('/')
 
-  // go through all segments and try to parse them, merge the results
+  // go through all remaining segments and try to parse them, merge the results
   return segments.reduce<PathParams>(
     (params, segment) => ({ ...params, ...parseSegment(segment) }),
     { id }
@@ -27,10 +30,13 @@ export const parsePath = (path: string): PathParams => {
 }
 
 const parseSegment = (segment: string) =>
+  ignoreEmptySegment(segment) ||
   parseType(segment) ||
   parseDimensions(segment) ||
   parseFocusPoint(segment) ||
   parseCropRectangle(segment) || { error: `invalid segment "${segment}"` }
+
+const ignoreEmptySegment = (segment: string) => (!segment ? {} : undefined)
 
 const parseType = (segment: string) => {
   return isImageType(segment) ? { type: segment } : undefined
