@@ -1,11 +1,11 @@
 import { env } from './env'
-import { isImageType, ProcessingParams } from './processImage'
+import { isImageType, OptimizingParams } from './optimizeImage'
 
 const imagePath = env('IMAGE_PATH')
 if (!imagePath.endsWith('/') || !imagePath.startsWith('/'))
   throw Error(`IMAGE_PATH "${imagePath}" must start and end with a trailing slash "/"`)
 
-export type PathParams = ProcessingParams & {
+export type PathParams = OptimizingParams & {
   id?: string
   error?: string
 }

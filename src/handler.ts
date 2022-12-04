@@ -2,8 +2,8 @@ import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 import { env } from './env'
 import { parsePath } from './parsePath'
-import { processImage } from './processImage'
-import { loadOriginalImage, saveProcessedImage } from './s3'
+import { optimizeImage } from './optimizeImage'
+import { loadOriginalImage, saveOptimizedImage } from './s3'
 
 const securityToken = env('SECURITY_TOKEN')
 
@@ -49,11 +49,11 @@ export const handleRequest = async (
   const original = await loadOriginalImage(id)
   if (!original) return notFound
 
-  const { processed, type } = await processImage(original, params)
+  const { optimized, type } = await optimizeImage(original, params)
   const contentType = `image/${type}`
   const headers = { 'content-type': contentType, 'cache-control': cacheControl }
-  const save = saveProcessedImage(path, processed, contentType, cacheControl)
-  const body = processed.toString('base64')
+  const save = saveOptimizedImage(path, optimized, contentType, cacheControl)
+  const body = optimized.toString('base64') // do base64 encoding in parallel to saving
   await save
 
   if (method === 'HEAD') return { statusCode: 200, headers }

@@ -76,9 +76,9 @@ Resources:
         Variables:
           NODE_ENV: 'production'
           NODE_OPTIONS: '--enable-source-maps'
-          ORIGINAL_BUCKET: !Ref OriginalImagesBucket
+          ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
+          OPTIMIZED_IMAGES_BUCKET: !Ref OptimizedImagesBucket
           ORIGINAL_KEY_PREFIX: 'image/'
-          PROCESSED_BUCKET: !Ref OptimizedImagesBucket
           CACHE_CONTROL: 'public, max-age=31536000'
           IMAGE_PATH: '/image/'
           IMAGE_QUALITY: '80'

@@ -5,6 +5,8 @@
     "sourceMap": true,
     "noEmit": true,
     "incremental": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
     "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src", "infrastructure"]

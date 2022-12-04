@@ -9,7 +9,7 @@ export type ImageType = typeof imageTypes[number]
 export const isImageType = (value: unknown): value is ImageType =>
   imageTypes.includes(value as ImageType)
 
-export type ProcessingParams = {
+export type OptimizingParams = {
   type?: ImageType
   width?: number
   height?: number
@@ -17,7 +17,7 @@ export type ProcessingParams = {
   crop?: Rectangle
 }
 
-export const processImage = async (image: Uint8Array, params: ProcessingParams) => {
+export const optimizeImage = async (image: Uint8Array, params: OptimizingParams) => {
   const sharpImage = sharp(image)
   const size = getImageSize(await sharpImage.metadata())
   const {
@@ -34,7 +34,7 @@ export const processImage = async (image: Uint8Array, params: ProcessingParams) 
   sharpImage.extract(source)
   sharpImage.resize(limitSize(width, height, ratio, source))
   sharpImage[type]({ quality }) // convert image format
-  return { type, processed: await sharpImage.toBuffer() }
+  return { type, optimized: await sharpImage.toBuffer() }
 }
 
 const getImageSize = ({ width, height, orientation }: Metadata) => {
