@@ -1,5 +1,5 @@
 import { env } from './env'
-import { ImageType, imageTypes, isImageType, ProcessingParams } from './processImage'
+import { isImageType, ProcessingParams } from './processImage'
 
 const imagePath = env('IMAGE_PATH')
 if (!imagePath.endsWith('/') || !imagePath.startsWith('/'))
@@ -37,12 +37,12 @@ const parseType = (segment: string) => {
 }
 
 const parseDimensions = (segment: string) => {
-  if (segment.match(/^\d+$/)) return { width: parseInt(segment) }
+  if (segment.match(/^\d+$/)) return { width: parseInt(segment), height: NaN }
   const match = segment.match(/^(\d+)?x(\d+)?$/)
   return (
     match && {
-      width: parseInt(match[1]) || undefined,
-      height: parseInt(match[2]) || undefined,
+      width: parseInt(match[1]),
+      height: parseInt(match[2]),
     }
   )
 }
@@ -70,4 +70,4 @@ const parseCropRectangle = (segment: string) => {
   )
 }
 
-const parseInt = (value: string) => Number.parseInt(value)
+const parseInt = (value: string | undefined) => Number.parseInt(value!) // parseInt(undefined) will return NaN

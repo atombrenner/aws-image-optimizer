@@ -35,9 +35,9 @@ describe('parsePath', () => {
   })
 
   it.each([
-    [{ width: 100 }, '/path/to/image/UUID/jpeg/100'],
-    [{ width: 200 }, '/path/to/image/UUID/jpeg/200x'],
-    [{ height: 300 }, '/path/to/image/UUID/jpeg/x300'],
+    [{ width: 100, height: NaN }, '/path/to/image/UUID/jpeg/100'],
+    [{ width: 200, height: NaN }, '/path/to/image/UUID/jpeg/200x'],
+    [{ width: NaN, height: 300 }, '/path/to/image/UUID/jpeg/x300'],
     [{ width: 400, height: 300 }, '/path/to/image/UUID/jpeg/400x300'],
     [{}, '/path/to/image/UUID/jpeg'],
   ])('should extract dimensions %p from from path %p', (expectedDimension, path) => {
