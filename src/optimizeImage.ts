@@ -37,10 +37,12 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   return { type, optimized: await sharpImage.toBuffer() }
 }
 
-const getImageSize = ({ width, height, orientation }: Metadata) => {
+export const getImageSize = ({ width, height, orientation }: Metadata) => {
   if (!width || !height) throw Error('original image has no size')
   // if present, orientation is 1 2 3 4 5 6 7 8 and describes rotation and mirroring, see https://exiftool.org/TagNames/EXIF.html
-  return orientation && orientation <= 4 ? { width, height } : { width: height, height: width }
+  return orientation && orientation > 4 && orientation <= 8
+    ? { width: height, height: width } // rotate 90 degrees for orientation 5, 6, 7 and 8
+    : { width, height } // do nothing for all other values, including undefined, NaN, ...
 }
 
 const defaultFocus = (size: Size) => ({
