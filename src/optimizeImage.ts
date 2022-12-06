@@ -28,11 +28,11 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
     type = 'webp',
   } = params
 
-  const ratio = width && height ? width / height : size.width / size.height
-  const source = region(focusCrop(ratio, focus, crop), size)
+  const ratio = width && height ? width / height : crop.width / crop.height
+  const source = limitedRegion(focusCrop(ratio, focus, crop), size)
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
-  sharpImage.resize(limitSize(width, height, ratio, source))
+  sharpImage.resize(limitedWidth(width, height, ratio, source))
   sharpImage[type]({ quality }) // convert image format
   return { type, optimized: await sharpImage.toBuffer() }
 }
@@ -57,15 +57,16 @@ const defaultCrop = (size: Size) => ({
   height: size.height,
 })
 
-const region = (rect: Rectangle, max: Size): Region => ({
+// calculate a region from a Rectangle that lies inside the original image (round to pixels)
+const limitedRegion = (rect: Rectangle, max: Size): Region => ({
   left: Math.max(0, Math.round(rect.x)),
   top: Math.max(0, Math.round(rect.y)),
   width: Math.min(max.width, Math.round(rect.width)),
   height: Math.min(max.height, Math.round(rect.height)),
 })
 
-// // calclulate a width so that the resulting region fits the original image (we don't want to artificially blow up small images)
-function limitSize(width: number, height: number, ratio: number, max: Size) {
+// // calclulate a width so that the resulting region is smaller or equal the max size (we don't want to artificially blow up small images)
+function limitedWidth(width: number, height: number, ratio: number, max: Size) {
   if (!width) width = height * ratio
   if (!height) height = width / ratio
   if (width > max.width) {
