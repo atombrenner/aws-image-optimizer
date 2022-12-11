@@ -62,4 +62,10 @@ describe('parsePath', () => {
     const params = parsePath('/path/to/image/UUID/fp=200,100///100x200/')
     expect(params).toEqual({ id: 'UUID', focus: { x: 200, y: 100 }, width: 100, height: 200 })
   })
+
+  it('should extract quality parameter', () => {
+    const { quality, error } = parsePath('/path/to/image/UUID/q=50')
+    expect(quality).toEqual(50)
+    expect(error).toBeUndefined()
+  })
 })

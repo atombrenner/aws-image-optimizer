@@ -34,7 +34,8 @@ const parseSegment = (segment: string) =>
   parseType(segment) ||
   parseDimensions(segment) ||
   parseFocusPoint(segment) ||
-  parseCropRectangle(segment) || { error: `invalid segment "${segment}"` }
+  parseCropRectangle(segment) ||
+  parseQuality(segment) || { error: `invalid segment "${segment}"` }
 
 const ignoreEmptySegment = (segment: string) => (!segment ? {} : undefined)
 
@@ -45,35 +46,33 @@ const parseType = (segment: string) => {
 const parseDimensions = (segment: string) => {
   if (segment.match(/^\d+$/)) return { width: parseInt(segment), height: NaN }
   const match = segment.match(/^(\d+)?x(\d+)?$/)
-  return (
-    match && {
-      width: parseInt(match[1]),
-      height: parseInt(match[2]),
-    }
-  )
+  if (!match) return undefined
+  return { width: parseInt(match[1]), height: parseInt(match[2]) }
 }
 
 const parseFocusPoint = (segment: string) => {
   const match = segment.match(/^fp=(\d+),(\d+)$/)
-  return (
-    match && {
-      focus: { x: parseInt(match[1]), y: parseInt(match[2]) },
-    }
-  )
+  if (!match) return undefined
+  return { focus: { x: parseInt(match[1]), y: parseInt(match[2]) } }
 }
 
 const parseCropRectangle = (segment: string) => {
   const match = segment.match(/^crop=(\d+),(\d+),(\d+),(\d+)$/)
-  return (
-    match && {
-      crop: {
-        x: parseInt(match[1]),
-        y: parseInt(match[2]),
-        width: parseInt(match[3]),
-        height: parseInt(match[4]),
-      },
-    }
-  )
+  if (!match) return undefined
+  return {
+    crop: {
+      x: parseInt(match[1]),
+      y: parseInt(match[2]),
+      width: parseInt(match[3]),
+      height: parseInt(match[4]),
+    },
+  }
+}
+
+const parseQuality = (segment: string) => {
+  const match = segment.match(/^q=(\d+)$/)
+  if (!match) return undefined
+  return { quality: parseInt(match[1]) }
 }
 
 const parseInt = (value: string | undefined) => Number.parseInt(value!) // parseInt(undefined) will return NaN

@@ -1,8 +1,5 @@
 import sharp, { Metadata, Region } from 'sharp'
-import { env } from './env'
 import { focusCrop, Point, Rectangle, Size } from './focusCrop'
-
-const quality = Number.parseInt(env('IMAGE_QUALITY'))
 
 export const imageTypes = ['webp', 'jpeg', 'avif'] as const
 export type ImageType = typeof imageTypes[number]
@@ -15,6 +12,7 @@ export type OptimizingParams = {
   height?: number
   focus?: Point
   crop?: Rectangle
+  quality?: number
 }
 
 export const optimizeImage = async (image: Uint8Array, params: OptimizingParams) => {
@@ -33,7 +31,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(limitedWidth(width, height, ratio, source))
-  sharpImage[type]({ quality }) // convert image format
+  sharpImage[type]() // convert image format
   return { type, optimized: await sharpImage.toBuffer() }
 }
 
