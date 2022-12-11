@@ -24,6 +24,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
     focus = defaultFocus(size),
     crop = defaultCrop(size),
     type = 'webp',
+    quality,
   } = params
 
   const ratio = width && height ? width / height : crop.width / crop.height
@@ -31,7 +32,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(limitedWidth(width, height, ratio, source))
-  sharpImage[type]() // convert image format
+  sharpImage[type]({ quality }) // convert image format
   return { type, optimized: await sharpImage.toBuffer() }
 }
 
