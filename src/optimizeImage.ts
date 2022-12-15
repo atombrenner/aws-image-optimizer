@@ -23,7 +23,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
     height = params.width ? 0 : 200,
     focus = defaultFocus(size),
     crop = defaultCrop(size),
-    type = 'webp',
+    type = 'jpeg',
     quality,
   } = params
 

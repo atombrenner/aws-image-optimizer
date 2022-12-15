@@ -75,13 +75,19 @@ convert query parameters to path parameters.
 
 | Parameter   | Explanation                     | Example                | Default                                       |
 | ----------- | ------------------------------- | ---------------------- | --------------------------------------------- |
-| format      | `jpeg` or `webp` or `avif`      | `/avif`                | `webp`                                        |
+| format      | `jpeg` or `webp` or `avif`      | `/avif`                | `jpeg`                                        |
 | dimensions  | `<width>x<height`>              | `/800x600`             | `320x200`                                     |
 | width only  | `<width>` or `<width>x`         | `/800`                 | height calculated to keep source aspect ratio |
 | height only | `x<height>`                     | `/x600`                | width calculated to keep source aspect ratio  |
 | focus point | `fp=<x>,<y>`                    | `/fp=2000,1200`        | (original_width / 2), (original_height / 3)   |
 | cropping    | `crop=<x>,<y>,<width>,<height>` | `/crop=96,0,3904,2850` | original image size                           |
 | quality     | `q=<50..100>`                   | `/q=80`                | encoder specific, see sharp documentation     |
+
+Jpeg encoding uses mozjpg settings, so it has the same compression ratio as webp, but
+is more compatible. With jpegxl we can be as good as avif but still be compatible to jpeg.
+
+- [Is WebP better than JPEG?](https://siipo.la/blog/is-webp-really-better-than-jpeg)
+- [Modern Data Compression in 2021](https://chipsandcheese.com/2021/02/28/modern-data-compression-in-2021-part-2-the-battle-to-dethrone-jpeg-with-jpeg-xl-avif-and-webp/)
 
 ## Security
 
