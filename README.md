@@ -103,22 +103,37 @@ convert query parameters to path parameters.
 - `npm run stack` creates or updates the CloudFormation stack
 - `npm run deploy` used to deploy ./dist/lambda.zip to the created lambda function
 - `npm start` will start the lambda function locally
+- `npm sign <path> [secret]`
 
 ## Configuration
 
 The following environment variables must be specified. For `npm start` it is recommended
 to create a `.env` file and also configure AWS credentials
 
-| Environment Variable      | Explanation                                                                |
-| ------------------------- | -------------------------------------------------------------------------- |
-| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images (read only access)                           |
-| `OPTIMIZED_IMAGES_BUCKET` | S3 bucket with optimized images (read write access)                        |
-| `ORIGINAL_IMAGE_KEY`      | S3 key pattern for the original image, e.g. `image/${ID}/original`         |
-| `IMAGE_PATH_ID_PATTERN`   | regex to extract path prefix and image id, e.g. `^/path/to/image/([^/]+)/` |
-| `CACHE_CONTROL`           | the Cache-Control header to set for optimized images                       |
-| `SECURITY_TOKEN`          | configured in Cloudfront to prevent access without Cloudfront              |
-| `SIGNED_URL_SECRET`       | secret for verifying signed urls                                           |
-| `AWS\_\*`                 | configure AWS SDK, e.g. credentials or region, local development only      |
+| Environment Variable      | Explanation                                                                 |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `ORIGINAL_IMAGES_BUCKET`  | S3 bucket with orginal images (read only access)                            |
+| `OPTIMIZED_IMAGES_BUCKET` | S3 bucket with optimized images (read write access)                         |
+| `ORIGINAL_IMAGE_KEY`      | S3 key pattern for the original image, e.g. `image/${ID}/original`          |
+| `IMAGE_PATH_ID_PATTERN`   | regex to extract path prefix and image id, e.g. `^/path/to/image/([^/]+)/`  |
+| `CACHE_CONTROL`           | the Cache-Control header to set for optimized images                        |
+| `SECURITY_TOKEN`          | configured in Cloudfront to prevent direct lambda access without Cloudfront |
+| `AWS\_\*`                 | configure AWS SDK, e.g. credentials or region, for local development only   |
+
+## URL Signing
+
+URL Signing is done by a CloudFront Function. It needs a secret that is shared between the client who signs
+an URL and CloudFront that verifies the signature. Because CloudFront Functions don't have environment variables,
+we embed the secret directly in the source code of the CloudFront Function.
+See [stack.ts](infrastructure/stack.ts) and [viewerRequest.js](infrastructure/cloudFrontFunctions/viewerRequest.js)
+for an implementation that reads it from [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
+You should configure a parameter with the name `image-optimizer-url-signing-secret` to store the secret.
+
+When you use URL signing each image URL must be signed. If you don't use it, you must remove
+the CloudFront Function. If you use it, it is your responsibility to give the URL builder secure access
+to the shared secret. If for example some code (think React) runs in the browser and creates URLs (e.g.
+set image srcset), signing is no longer useful as the secret is visible in the browser and can be easily stolen.
+Only if you can guarantee that all URLs are signed in a secure environment (server) URL signing makes sense.
 
 ## Caveats
 

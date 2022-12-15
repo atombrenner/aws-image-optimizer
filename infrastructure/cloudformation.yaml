@@ -3,6 +3,8 @@ Description: Image Optimizer
 Parameters:
   SecurityToken:
     Type: String
+  ViewerRequestFunction:
+    Type: String
 
 Outputs:
   LambdaUrl:
@@ -72,9 +74,10 @@ Resources:
     DependsOn: LambdaLogGroup
     Properties:
       FunctionName: !Ref AWS::StackName
-      Description: Web Image Optimizer
+      Description: Image Optimizer
       Runtime: nodejs18.x
-      Timeout: 10
+      Timeout: 15
+      ReservedConcurrentExecutions: 5 # limit max concurrency ot reduce the impact of denial of wallet attacks
       MemorySize: 2048 # the more memory the more CPU power
       Handler: lambda.handler
       Code:
@@ -98,7 +101,10 @@ Resources:
           IMAGE_PATH_ID_PATTERN: '^/image/([^/]+)'
           IMAGE_QUALITY: '80'
           CACHE_CONTROL: 'public, max-age=31536000'
-          SECURITY_TOKEN: 'secret'
+          SECURITY_TOKEN: !Ref SecurityToken
+          # see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html
+          # SECURITY_TOKEN: resolve:secretsmanager:image-optimizer:SecretString:security-token -> parameter from AWS Secrets Manager (expensive, $0.4 per secret and month)
+          # SECURITY_TOKEN: resolve:ssm-secure:image-optimizer-security-token -> AWS Systems Manager Parameter Store is cheaper, but not supported by lambda in December 2022
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -141,6 +147,16 @@ Resources:
                 Resource:
                   - !Sub ${OptimizedImagesBucket.Arn}/*
 
+  ViewerRequest:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub ${AWS::StackName}-viewer-request
+      AutoPublish: true
+      FunctionCode: !Ref ViewerRequestFunction
+      FunctionConfig:
+        Runtime: cloudfront-js-1.0
+        Comment: verify and remove url signatures /sig=vgdRgasG
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -178,6 +194,9 @@ Resources:
             CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed CachingOptimized Policy, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html#managed-cache-caching-optimized
             TargetOriginId: image-optimizer-group
             ViewerProtocolPolicy: redirect-to-https
+            FunctionAssociations: # Comment this if you don't want signed urls
+              - EventType: viewer-request
+                FunctionARN: !GetAtt ViewerRequest.FunctionARN
 
         Origins:
           - Id: optimized-images-bucket
@@ -192,7 +211,7 @@ Resources:
               OriginProtocolPolicy: https-only
             OriginCustomHeaders:
               - HeaderName: x-security-token
-                HeaderValue: secret
+                HeaderValue: !Ref SecurityToken
           - Id: example-origin
             DomainName: example.com
             CustomOriginConfig:

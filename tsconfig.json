@@ -9,5 +9,5 @@
     "noUnusedLocals": true,
     "tsBuildInfoFile": ".tsbuildinfo"
   },
-  "include": ["src", "infrastructure"]
+  "include": ["src", "infrastructure", "lib"]
 }

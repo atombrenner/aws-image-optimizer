@@ -1,19 +1,40 @@
 import { Stack } from '@atombrenner/cfn-stack'
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
+import { minify } from 'terser'
+import { getSecrets } from './ssm'
 
 async function main() {
-  const template = fs.readFileSync(`${__dirname}/cloudformation.yaml`, { encoding: 'utf-8' })
+  const template = readFileSync(`${__dirname}/cloudformation.yaml`, 'utf-8')
   const stack = new Stack({ name: 'web-image-optimizer' })
 
-  // set params, e.g. security-token
-  const params = { SecurityToken: 'secret' } // read secrets from ssm e.g.
+  // get secrets from AWS Systems Manager Parameter Store
+  const { UrlSigningSecret, ...secretParams } = await getSecrets({
+    SecurityToken: 'image-optimizer-security-token',
+    UrlSigningSecret: 'image-optimizer-url-signing-secret',
+  })
+
+  const params = {
+    ViewerRequestFunction: await loadCloudFrontFunction('viewerRequest.js', { UrlSigningSecret }),
+  }
 
   // create or update stack, print events and wait for completion
-  await stack.createOrUpdate(template, params)
+  await stack.createOrUpdate(template, { ...params, ...secretParams })
 
   // access stack outputs
-  const outputs: Record<string, string> = await stack.getOutputs()
+  const outputs = await stack.getOutputs()
   console.dir(outputs)
+}
+
+const loadCloudFrontFunction = async (name: string, params: Record<string, string>) => {
+  const js = readFileSync(`${__dirname}/cloudFrontFunctions/${name}`, 'utf-8')
+  const { code } = await minify(js)
+  if (!code) throw Error('terser did not return minified code')
+
+  // replace variables in function code
+  return Object.entries(params).reduce(
+    (code, [name, value]) => code.replaceAll(`{{${name}}}`, value),
+    code
+  )
 }
 
 main().catch((err) => {
