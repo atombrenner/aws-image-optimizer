@@ -32,7 +32,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(limitedWidth(width, height, ratio, source))
-  sharpImage[type]({ quality }) // convert image format
+  sharpImage[type]({ quality, mozjpeg: true }) // convert image format
   return { type, optimized: await sharpImage.toBuffer() }
 }
 
