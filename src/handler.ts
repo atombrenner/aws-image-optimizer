@@ -49,11 +49,12 @@ export const handleRequest = async (
   const original = await loadOriginalImage(id)
   if (!original) return notFound
 
-  const { optimized, type } = await optimizeImage(original, params)
-  const contentType = `image/${type}`
+  const { buffer, format } = await optimizeImage(original, params)
+
+  const contentType = `image/${format}`
   const headers = { 'content-type': contentType, 'cache-control': cacheControl }
-  const save = saveOptimizedImage(path, optimized, contentType, cacheControl)
-  const body = optimized.toString('base64') // do base64 encoding in parallel to saving
+  const save = saveOptimizedImage(path, buffer, contentType, cacheControl)
+  const body = buffer.toString('base64') // do base64 encoding in parallel to saving
   await save
 
   if (method === 'HEAD') return { statusCode: 200, headers }

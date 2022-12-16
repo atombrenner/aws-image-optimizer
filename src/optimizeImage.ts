@@ -1,13 +1,13 @@
 import sharp, { Metadata, Region } from 'sharp'
 import { focusCrop, Point, Rectangle, Size } from './focusCrop'
 
-export const imageTypes = ['webp', 'jpeg', 'avif'] as const
-export type ImageType = typeof imageTypes[number]
-export const isImageType = (value: unknown): value is ImageType =>
-  imageTypes.includes(value as ImageType)
+export const imageFormats = ['webp', 'jpeg', 'avif'] as const
+export type ImageFormat = typeof imageFormats[number]
+export const isImageFormat = (value: unknown): value is ImageFormat =>
+  imageFormats.includes(value as ImageFormat)
 
-export type OptimizingParams = {
-  type?: ImageType
+type TransformParams = {
+  format: ImageFormat
   width?: number
   height?: number
   focus?: Point
@@ -15,7 +15,24 @@ export type OptimizingParams = {
   quality?: number
 }
 
+export type OptimizingParams = Partial<TransformParams>
+
 export const optimizeImage = async (image: Uint8Array, params: OptimizingParams) => {
+  if (params.format) return transformImage(image, params as TransformParams)
+
+  // The compression between webp and jpeg (mozjpg) is very similiar.
+  // actually, for photos with lots of details mozjpg produces smaller images
+  // and for low detail images (screenshots, diagrams, ...) webp produces smaller ones.
+  // Because jpeg and webp are supported by all modern browsers, we can
+  // pick the format that has the best compression, if no format was specified.
+  const results = await Promise.all([
+    transformImage(image, { ...params, format: 'webp' }),
+    transformImage(image, { ...params, format: 'jpeg' }),
+  ])
+  return results[0].buffer.length < results[1].buffer.length ? results[0] : results[1]
+}
+
+export const transformImage = async (image: Uint8Array, params: TransformParams) => {
   const sharpImage = sharp(image)
   const size = getImageSize(await sharpImage.metadata())
   const {
@@ -23,7 +40,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
     height = params.width ? 0 : 200,
     focus = defaultFocus(size),
     crop = defaultCrop(size),
-    type = 'jpeg',
+    format,
     quality,
   } = params
 
@@ -32,8 +49,8 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(limitedWidth(width, height, ratio, source))
-  sharpImage[type]({ quality, mozjpeg: true }) // convert image format
-  return { type, optimized: await sharpImage.toBuffer() }
+  sharpImage[format]({ quality, mozjpeg: true }) // convert image format
+  return { buffer: await sharpImage.toBuffer(), format }
 }
 
 export const getImageSize = ({ width, height, orientation }: Metadata) => {

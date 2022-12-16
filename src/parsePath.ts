@@ -1,5 +1,5 @@
 import { env } from './env'
-import { isImageType, OptimizingParams } from './optimizeImage'
+import { isImageFormat, OptimizingParams } from './optimizeImage'
 
 // IMAGE_ID_PATTERN should match starting and trailing slash.
 // Because it is hard to verify this in the pattern itself we do it at runtime
@@ -31,7 +31,7 @@ export const parsePath = (path: string): PathParams => {
 
 const parseSegment = (segment: string) =>
   ignoreEmptySegment(segment) ||
-  parseType(segment) ||
+  parseFormat(segment) ||
   parseDimensions(segment) ||
   parseFocusPoint(segment) ||
   parseCropRectangle(segment) ||
@@ -39,8 +39,8 @@ const parseSegment = (segment: string) =>
 
 const ignoreEmptySegment = (segment: string) => (!segment ? {} : undefined)
 
-const parseType = (segment: string) => {
-  return isImageType(segment) ? { type: segment } : undefined
+const parseFormat = (segment: string) => {
+  return isImageFormat(segment) ? { format: segment } : undefined
 }
 
 const parseDimensions = (segment: string) => {

@@ -29,8 +29,8 @@ describe('parsePath', () => {
     ['webp', '/path/to/image/UUID/webp/'],
     ['jpeg', '/path/to/image/UUID/jpeg/400x300'],
   ])('should extract image type %p from from path %p', (expectedType, path) => {
-    const { type, error } = parsePath(path)
-    expect(type).toEqual(expectedType)
+    const { format, error } = parsePath(path)
+    expect(format).toEqual(expectedType)
     expect(error).toBeUndefined()
   })
 

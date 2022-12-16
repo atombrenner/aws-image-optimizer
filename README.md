@@ -1,7 +1,7 @@
 # AWS Image Optimizer
 
 - can resize and crop images to arbitrary aspect ratios on the fly
-- converts images to modern image formats _webp_ and _avif_ to reduce image size
+- converts images to modern image formats `webp` and `avif` to reduce image size
 - works well with [focus-point based cropping](https://github.com/atombrenner/focus-crop-react)
 - secure, fast and cheap implementation with AWS Cloudfront, S3 and Lambda
 - completely serverless and scalable
@@ -75,7 +75,7 @@ convert query parameters to path parameters.
 
 | Parameter   | Explanation                     | Example                | Default                                       |
 | ----------- | ------------------------------- | ---------------------- | --------------------------------------------- |
-| format      | `jpeg` or `webp` or `avif`      | `/avif`                | `jpeg`                                        |
+| format      | `jpeg` or `webp` or `avif`      | `/avif`                | pick smallest `jpeg` or `webp` impage         |
 | dimensions  | `<width>x<height`>              | `/800x600`             | `320x200`                                     |
 | width only  | `<width>` or `<width>x`         | `/800`                 | height calculated to keep source aspect ratio |
 | height only | `x<height>`                     | `/x600`                | width calculated to keep source aspect ratio  |
@@ -83,11 +83,32 @@ convert query parameters to path parameters.
 | cropping    | `crop=<x>,<y>,<width>,<height>` | `/crop=96,0,3904,2850` | original image size                           |
 | quality     | `q=<50..100>`                   | `/q=80`                | encoder specific, see sharp documentation     |
 
-Jpeg encoding uses mozjpg settings, so it has the same compression ratio as webp, but
-is more compatible. With jpegxl we can be as good as avif but still be compatible to jpeg.
+Jpeg encoding uses `mozjpg` settings, so it has a similiar compression ratio as `webp` for photos.
+If you don't specify a format, the image optimizer will internally try
+`webp` and `jpeg`. The format that produces the smallest image will be chosen and returned.
 
 - [Is WebP better than JPEG?](https://siipo.la/blog/is-webp-really-better-than-jpeg)
 - [Modern Data Compression in 2021](https://chipsandcheese.com/2021/02/28/modern-data-compression-in-2021-part-2-the-battle-to-dethrone-jpeg-with-jpeg-xl-avif-and-webp/)
+
+## Supported Image Formats
+
+On purpose only general purpose image formats are supported:
+
+- `jpeg` (with `mozjpg` settings)
+- `webp` (similar to `jpeg` and always better than `png` or `gif`)
+- `avif` (better compression than above, but slow and in some edge cases I noticed problems with visual quality)
+- coming soon: `jxl` excellent compression, quality and speed
+
+For `jpeg` format the `mozjpg` settings are used which give us a comparable or better compression than `webp`.
+Because `jpeg` and `webp` are widespread I recommend not specifying a format and letting the image
+optimizer pick the one that produces the smallest image.
+
+## Cost effective
+
+Each image will be generated only once and stored on S3.
+An S3 lifetime policy will remove optimized images after a while (300 days by default).
+If the image is still in use it will be optimized at max every 300 days.
+This could even improve quality because in the meantime encoders probably improved.
 
 ## Security
 
