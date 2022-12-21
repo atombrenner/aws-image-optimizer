@@ -76,9 +76,9 @@ Resources:
       FunctionName: !Ref AWS::StackName
       Description: Image Optimizer
       Runtime: nodejs18.x
-      Timeout: 15
+      Timeout: 30
       ReservedConcurrentExecutions: 5 # limit max concurrency ot reduce the impact of denial of wallet attacks
-      MemorySize: 2048 # the more memory the more CPU power
+      MemorySize: 3008 # the more memory the more CPU power, 3072 seems to be the sweet spot with two fast vCPU
       Handler: lambda.handler
       Code:
         ZipFile: 'placeholder - do not change'

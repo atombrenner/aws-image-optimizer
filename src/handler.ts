@@ -1,3 +1,4 @@
+import { cpus } from 'os'
 import { log } from '@atombrenner/log-json'
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 import { env } from './env'
@@ -6,6 +7,9 @@ import { optimizeImage } from './optimizeImage'
 import { loadOriginalImage, saveOptimizedImage } from './s3'
 
 const securityToken = env('SECURITY_TOKEN')
+
+const cpuData = cpus().map(({ model }) => model)
+log.info(`found ${cpuData.length} cpus: ${cpuData[0]}`)
 
 // AWS Lambda Function Urls are reusing types from APIGateway
 // but many fields are not used or filled with default values
