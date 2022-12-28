@@ -41,16 +41,35 @@ export const transformImage = async (image: Uint8Array, params: TransformParams)
     focus = defaultFocus(size),
     crop = defaultCrop(size),
     format,
-    quality,
   } = params
 
   const ratio = width && height ? width / height : crop.width / crop.height
   const source = limitedRegion(focusCrop(ratio, focus, crop), size)
+  const finalSize = limitedSize(width, height, ratio, source)
+  const quality = params.quality || getQuality(format, finalSize)
+
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
-  sharpImage.resize(limitedWidth(width, height, ratio, source))
+  sharpImage.resize(finalSize)
   sharpImage[format]({ quality, mozjpeg: true }) // convert image format
   return { buffer: await sharpImage.toBuffer(), format }
+}
+
+// the bigger the image the more we can reduce quality
+export const getQuality = (format: ImageFormat, size: Size): number => {
+  const pixels = size.width * size.height
+  if (format === 'jpeg' || format === 'webp') {
+    if (pixels < 200 * 200) return 80
+    if (pixels < 400 * 400) return 70
+    if (pixels < 600 * 600) return 60
+    if (pixels < 800 * 800) return 50
+    return 40
+  } else if (format === 'avif') {
+    if (pixels < 400 * 400) return 50
+    if (pixels < 800 * 800) return 42
+    return 35
+  }
+  throw Error(`automatic quality for format ${format} not implemented`)
 }
 
 export const getImageSize = ({ width, height, orientation }: Metadata) => {
@@ -81,16 +100,17 @@ const limitedRegion = (rect: Rectangle, max: Size): Region => ({
   height: Math.min(max.height, Math.round(rect.height)),
 })
 
-// // calclulate a width so that the resulting region is smaller or equal the max size (we don't want to artificially blow up small images)
-function limitedWidth(width: number, height: number, ratio: number, max: Size) {
+// calculate width and height so that the resulting region is fits into the source region
+// because we don't want to artificially create images larger than the original
+const limitedSize = (width: number, height: number, ratio: number, source: Size): Size => {
   if (!width) width = height * ratio
   if (!height) height = width / ratio
-  if (width > max.width) {
-    width = max.width
-    height = max.width / ratio
+  if (width > source.width) {
+    width = source.width
+    height = source.width / ratio
   }
-  if (height > max.height) {
-    width = max.height * ratio
+  if (height > source.height) {
+    width = source.height * ratio
     height = width / ratio
   }
   return {

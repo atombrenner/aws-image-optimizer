@@ -81,7 +81,7 @@ convert query parameters to path parameters.
 | height only | `x<height>`                     | `/x600`                | width calculated to keep source aspect ratio  |
 | focus point | `fp=<x>,<y>`                    | `/fp=2000,1200`        | (original_width / 2), (original_height / 3)   |
 | cropping    | `crop=<x>,<y>,<width>,<height>` | `/crop=96,0,3904,2850` | original image size                           |
-| quality     | `q=<50..100>`                   | `/q=80`                | encoder specific, see sharp documentation     |
+| quality     | `q=<0..100>`                    | `/q=80`                | automatic, depending on imagesize and format  |
 
 Jpeg encoding uses `mozjpg` settings, so it has a similiar compression ratio as `webp` for photos.
 If you don't specify a format, the image optimizer will internally try
