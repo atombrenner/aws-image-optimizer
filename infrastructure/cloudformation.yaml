@@ -143,6 +143,11 @@ Resources:
                   - !Sub ${OriginalImagesBucket.Arn}/*
               - Effect: Allow
                 Action:
+                  - s3:ListObject
+                Resource:
+                  - !Sub ${OriginalImagesBucket.Arn}/*
+              - Effect: Allow
+                Action:
                   - s3:PutObject
                 Resource:
                   - !Sub ${OptimizedImagesBucket.Arn}/*
