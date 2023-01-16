@@ -13,6 +13,7 @@ type TransformParams = {
   focus?: Point
   crop?: Rectangle
   quality?: number
+  // background?: string // background color in (#ffffff) to blend alpha channel with
 }
 
 export type OptimizingParams = Partial<TransformParams>
@@ -27,21 +28,28 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   // pick the format that has the best compression, if no format was specified.
   const results = await Promise.all([
     transformImage(image, { ...params, format: 'webp' }),
-    transformImage(image, { ...params, format: 'jpeg' }),
+    transformImage(image, { ...params, format: 'jpeg' }).catch(() => undefined),
   ])
+  if (!results[1]) return results[0] // can't convert to jpeg, so let's hope that webp works
   return results[0].buffer.length < results[1].buffer.length ? results[0] : results[1]
 }
 
-export const transformImage = async (image: Uint8Array, params: TransformParams) => {
+const transformImage = async (image: Uint8Array, params: TransformParams) => {
   const sharpImage = sharp(image)
-  const size = getImageSize(await sharpImage.metadata())
+  const meta = await sharpImage.metadata()
+  const size = getImageSize(meta)
   const {
     width = params.height ? 0 : 320,
     height = params.width ? 0 : 200,
     focus = defaultFocus(size),
     crop = defaultCrop(size),
+    // background = params.format === 'jpeg', // for jpeg we need a default
     format,
   } = params
+
+  // if (background) {
+  //   sharpImage.flatten({ background }) // TODO: shall we use the meta.background color from the image?
+  // }
 
   const ratio = width && height ? width / height : crop.width / crop.height
   const source = limitedRegion(focusCrop(ratio, focus, crop), size)
