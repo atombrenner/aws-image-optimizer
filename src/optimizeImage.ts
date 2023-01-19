@@ -13,7 +13,7 @@ type TransformParams = {
   focus?: Point
   crop?: Rectangle
   quality?: number
-  // background?: string // background color in (#ffffff) to blend alpha channel with
+  background?: string // background color to blend alpha channel with
 }
 
 export type OptimizingParams = Partial<TransformParams>
@@ -26,11 +26,16 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   // and for low detail images (screenshots, diagrams, ...) webp produces smaller ones.
   // Because jpeg and webp are supported by all modern browsers, we can
   // pick the format that has the best compression, if no format was specified.
+  // For source images with format `png` or an alpha channel we always
+  // prefer webp for better image quality
+  const meta = await sharp(image).metadata()
+  if (meta.hasAlpha || ['png', 'gif', 'tif', 'tiff'].includes(meta.format ?? '')) {
+    return await transformImage(image, { ...params, format: 'webp' })
+  }
   const results = await Promise.all([
     transformImage(image, { ...params, format: 'webp' }),
-    transformImage(image, { ...params, format: 'jpeg' }).catch(() => undefined),
+    transformImage(image, { ...params, format: 'jpeg' }),
   ])
-  if (!results[1]) return results[0] // can't convert to jpeg, so let's hope that webp works
   return results[0].buffer.length < results[1].buffer.length ? results[0] : results[1]
 }
 
@@ -43,19 +48,18 @@ const transformImage = async (image: Uint8Array, params: TransformParams) => {
     height = params.width ? 0 : 200,
     focus = defaultFocus(size),
     crop = defaultCrop(size),
-    // background = params.format === 'jpeg', // for jpeg we need a default
+    background = params.format === 'jpeg' ? '#ffffff' : params.background, // for jpeg we need to always flatten
     format,
   } = params
-
-  // if (background) {
-  //   sharpImage.flatten({ background }) // TODO: shall we use the meta.background color from the image?
-  // }
 
   const ratio = width && height ? width / height : crop.width / crop.height
   const source = limitedRegion(focusCrop(ratio, focus, crop), size)
   const finalSize = limitedSize(width, height, ratio, source)
   const quality = params.quality || getQuality(format, finalSize)
 
+  if (background) {
+    sharpImage.flatten({ background })
+  }
   sharpImage.rotate() // normalize rotation
   sharpImage.extract(source)
   sharpImage.resize(finalSize)
@@ -73,8 +77,8 @@ export const getQuality = (format: ImageFormat, size: Size): number => {
     if (pixels < 800 * 800) return 50
     return 40
   } else if (format === 'avif') {
-    if (pixels < 400 * 400) return 50
-    if (pixels < 800 * 800) return 42
+    if (pixels < 400 * 400) return 55
+    if (pixels < 800 * 800) return 45
     return 35
   }
   throw Error(`automatic quality for format ${format} not implemented`)

@@ -68,4 +68,10 @@ describe('parsePath', () => {
     expect(quality).toEqual(50)
     expect(error).toBeUndefined()
   })
+
+  it('should extract background parameter', () => {
+    const { background, error } = parsePath('/path/to/image/UUID/bg=ff0000/q=50')
+    expect(background).toEqual('#ff0000')
+    expect(error).toBeUndefined()
+  })
 })

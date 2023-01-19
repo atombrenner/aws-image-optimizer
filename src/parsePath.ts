@@ -35,7 +35,8 @@ const parseSegment = (segment: string) =>
   parseDimensions(segment) ||
   parseFocusPoint(segment) ||
   parseCropRectangle(segment) ||
-  parseQuality(segment) || { error: `invalid segment "${segment}"` }
+  parseQuality(segment) ||
+  parseBackground(segment) || { error: `invalid segment "${segment}"` }
 
 const ignoreEmptySegment = (segment: string) => (!segment ? {} : undefined)
 
@@ -73,6 +74,12 @@ const parseQuality = (segment: string) => {
   const match = segment.match(/^q=(\d+)$/)
   if (!match) return undefined
   return { quality: parseInt(match[1]) }
+}
+
+const parseBackground = (segment: string) => {
+  const match = segment.match(/^bg=([0-9a-f]{6})$/)
+  if (!match) return undefined
+  return { background: `#${match[1]}` }
 }
 
 const parseInt = (value: string | undefined) => Number.parseInt(value!) // parseInt(undefined) will return NaN
