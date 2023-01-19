@@ -73,15 +73,16 @@ easier to use and build (no CloudFront whitelisting for example).
 If you don't like this approach you can use a CloudFront function to
 convert query parameters to path parameters.
 
-| Parameter   | Explanation                     | Example                | Default                                       |
-| ----------- | ------------------------------- | ---------------------- | --------------------------------------------- |
-| format      | `jpeg` or `webp` or `avif`      | `/avif`                | pick smallest `jpeg` or `webp` impage         |
-| dimensions  | `<width>x<height`>              | `/800x600`             | `320x200`                                     |
-| width only  | `<width>` or `<width>x`         | `/800`                 | height calculated to keep source aspect ratio |
-| height only | `x<height>`                     | `/x600`                | width calculated to keep source aspect ratio  |
-| focus point | `fp=<x>,<y>`                    | `/fp=2000,1200`        | (original_width / 2), (original_height / 3)   |
-| cropping    | `crop=<x>,<y>,<width>,<height>` | `/crop=96,0,3904,2850` | original image size                           |
-| quality     | `q=<0..100>`                    | `/q=80`                | automatic, depending on imagesize and format  |
+| Parameter   | Explanation                     | Example                | Default                                             |
+| ----------- | ------------------------------- | ---------------------- | --------------------------------------------------- |
+| format      | `jpeg` or `webp` or `avif`      | `/avif`                | pick smallest `jpeg` or `webp` impage               |
+| dimensions  | `<width>x<height`>              | `/800x600`             | `320x200`                                           |
+| width only  | `<width>` or `<width>x`         | `/800`                 | height calculated to keep source aspect ratio       |
+| height only | `x<height>`                     | `/x600`                | width calculated to keep source aspect ratio        |
+| focus point | `fp=<x>,<y>`                    | `/fp=2000,1200`        | (original_width / 2), (original_height / 3)         |
+| cropping    | `crop=<x>,<y>,<width>,<height>` | `/crop=96,0,3904,2850` | original image size                                 |
+| quality     | `q=<0..100>`                    | `/q=80`                | automatic, depending on imagesize and format        |
+| background  | `bg=<hex-rgb-color>`            | `/bg=ff0000`           | blend transparent pixels with this background color |
 
 Jpeg encoding uses `mozjpg` settings, so it has a similiar compression ratio as `webp` for photos.
 If you don't specify a format, the image optimizer will internally try
