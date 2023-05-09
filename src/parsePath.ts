@@ -19,7 +19,7 @@ export const parsePath = (path: string): PathParams => {
   // if (!path.startsWith(match[0]))
   //   throw Error('IMAGE_PATH_ID_PATTERN must match leading and trailing slash')
 
-  const id = match[1] // first group must be the image id
+  const id = match.groups?.ID // named capture group ID must be the image id
   const segments = path.substring(match[0].length).split('/')
 
   // go through all remaining segments and try to parse them, merge the results

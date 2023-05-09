@@ -57,7 +57,7 @@ The start of the path contains the image id. Often it is prefixed or postfixed
 by arbitrary strings. To be flexible, we use a regex, `IMAGE_PATH_ID_PATTERN`
 to extract the id. The regex must match the beginning of the path and the first
 group must capture the id. In the above example, we would use the pattern
-`^/image/([^/]+)/` to capture the first segment after `/image/`. With more
+`^/image/(?<ID>[^/]+)/` to capture the first segment after `/image/`. With more
 complex patterns the id can even span multiple segments.
 
 Once we have the id of the original image, we need to construct the key of

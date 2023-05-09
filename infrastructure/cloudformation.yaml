@@ -78,7 +78,7 @@ Resources:
       Runtime: nodejs18.x
       Timeout: 30
       ReservedConcurrentExecutions: 5 # limit max concurrency ot reduce the impact of denial of wallet attacks
-      MemorySize: 3008 # the more memory the more CPU power, 3072 seems to be the sweet spot with two fast vCPU
+      MemorySize: 3008 # the more memory the more CPU power, 3008 seems to be the sweet spot with two fast vCPU
       Handler: lambda.handler
       Code:
         ZipFile: 'placeholder - do not change'
@@ -98,7 +98,7 @@ Resources:
           ORIGINAL_IMAGES_BUCKET: !Ref OriginalImagesBucket
           OPTIMIZED_IMAGES_BUCKET: !Ref OptimizedImagesBucket
           ORIGINAL_IMAGE_KEY: 'image/${ID}'
-          IMAGE_PATH_ID_PATTERN: '^/image/([^/]+)'
+          IMAGE_PATH_ID_PATTERN: '^/image/(?<ID>[^/]+)/'
           IMAGE_QUALITY: '80'
           CACHE_CONTROL: 'public, max-age=31536000'
           SECURITY_TOKEN: !Ref SecurityToken
