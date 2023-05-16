@@ -77,7 +77,7 @@ Resources:
       Description: Image Optimizer
       Runtime: nodejs18.x
       Timeout: 30
-      ReservedConcurrentExecutions: 5 # limit max concurrency ot reduce the impact of denial of wallet attacks
+      ReservedConcurrentExecutions: 100 # limit max concurrency to reduce the impact of denial of wallet attacks
       MemorySize: 3008 # the more memory the more CPU power, 3008 seems to be the sweet spot with two fast vCPU
       Handler: lambda.handler
       Code:
