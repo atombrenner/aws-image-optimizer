@@ -105,12 +105,16 @@ const defaultCrop = (size: Size) => ({
 })
 
 // calculate a region from a Rectangle that lies inside the original image (round to pixels)
-const limitedRegion = (rect: Rectangle, max: Size): Region => ({
-  left: Math.max(0, Math.round(rect.x)),
-  top: Math.max(0, Math.round(rect.y)),
-  width: Math.min(max.width, Math.round(rect.width)),
-  height: Math.min(max.height, Math.round(rect.height)),
-})
+export const limitedRegion = (rect: Rectangle, max: Size): Region => {
+  const left = Math.max(0, Math.round(rect.x))
+  const top = Math.max(0, Math.round(rect.y))
+  return {
+    left,
+    top,
+    width: Math.min(max.width - left, Math.round(rect.width)),
+    height: Math.min(max.height - top, Math.round(rect.height)),
+  }
+}
 
 // calculate width and height so that the resulting region is fits into the source region
 // because we don't want to artificially create images larger than the original
