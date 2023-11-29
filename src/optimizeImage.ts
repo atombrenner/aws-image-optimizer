@@ -2,7 +2,7 @@ import sharp, { Metadata, Region } from 'sharp'
 import { focusCrop, Point, Rectangle, Size } from './focusCrop'
 
 export const imageFormats = ['webp', 'jpeg', 'avif'] as const
-export type ImageFormat = typeof imageFormats[number]
+export type ImageFormat = (typeof imageFormats)[number]
 export const isImageFormat = (value: unknown): value is ImageFormat =>
   imageFormats.includes(value as ImageFormat)
 
@@ -22,7 +22,7 @@ export const optimizeImage = async (image: Uint8Array, params: OptimizingParams)
   if (params.format) return transformImage(image, params as TransformParams)
 
   // The compression between webp and jpeg (mozjpg) is very similiar.
-  // actually, for photos with lots of details mozjpg produces smaller images
+  // Actually, for photos with lots of details mozjpg produces smaller images
   // and for low detail images (screenshots, diagrams, ...) webp produces smaller ones.
   // Because jpeg and webp are supported by all modern browsers, we can
   // pick the format that has the best compression, if no format was specified.
@@ -70,16 +70,19 @@ const transformImage = async (image: Uint8Array, params: TransformParams) => {
 // the bigger the image the more we can reduce quality
 export const getQuality = (format: ImageFormat, size: Size): number => {
   const pixels = size.width * size.height
+  // the following quality settings were experimentally found by manually comparing image quality
   if (format === 'jpeg' || format === 'webp') {
     if (pixels < 200 * 200) return 80
     if (pixels < 400 * 400) return 70
     if (pixels < 600 * 600) return 60
     if (pixels < 800 * 800) return 50
-    return 40
+    return 45
   } else if (format === 'avif') {
+    if (pixels < 200 * 200) return 60
     if (pixels < 400 * 400) return 55
+    if (pixels < 600 * 600) return 50
     if (pixels < 800 * 800) return 45
-    return 35
+    return 40
   }
   throw Error(`automatic quality for format ${format} not implemented`)
 }
