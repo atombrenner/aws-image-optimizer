@@ -199,9 +199,9 @@ Resources:
             CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed CachingOptimized Policy, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html#managed-cache-caching-optimized
             TargetOriginId: image-optimizer-group
             ViewerProtocolPolicy: redirect-to-https
-            FunctionAssociations: # Comment this if you don't want signed urls
-              - EventType: viewer-request
-                FunctionARN: !GetAtt ViewerRequest.FunctionARN
+            # FunctionAssociations: # WARNING: Uncomment this to enable URL signing as a protection against Denial-of-Wallet attack
+            #   - EventType: viewer-request
+            #     FunctionARN: !GetAtt ViewerRequest.FunctionARN
 
         Origins:
           - Id: optimized-images-bucket
