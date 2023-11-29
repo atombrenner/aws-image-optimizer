@@ -38,6 +38,6 @@ const loadCloudFrontFunction = async (name: string, params: Record<string, strin
 }
 
 main().catch((err) => {
-  console.error(err.message)
+  console.error(err.name ?? '', err.message)
   process.exit(1) // exit the process with an error code
 })

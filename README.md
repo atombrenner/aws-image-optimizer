@@ -51,7 +51,7 @@ but was implemented without knowledge of it.
 
 ## URL path structure
 
-Example: `/image/ab5234-2346-ab34f/avif/400x300/fp=2000,1000/crop=0,0,4000,3000`
+Example: `/image/ab5234-2346-ab34f/webp/400x300/fp=2000,1000/crop=0,0,4000,3000`
 
 The start of the path contains the image id. Often it is prefixed or postfixed
 by arbitrary strings. To be flexible, we use a regex, `IMAGE_PATH_ID_PATTERN`
@@ -60,7 +60,7 @@ group must capture the id. In the above example, we would use the pattern
 `^/image/(?<ID>[^/]+)/` to capture the first segment after `/image/`. With more
 complex patterns the id can even span multiple segments.
 
-Once we have the id of the original image, we need to construct the key of
+Once we have the ID of the original image, we need to construct the key of
 the original image. The `ORIGINAL_IMAGE_KEY` environment variable defines a
 key template, e.g. `foo/${ID}/bar`, where the `${ID}` is replaced with the
 extracted id.
@@ -84,7 +84,7 @@ convert query parameters to path parameters.
 | quality     | `q=<0..100>`                    | `/q=80`                | automatic, depending on imagesize and format        |
 | background  | `bg=<hex-rgb-color>`            | `/bg=ff0000`           | blend transparent pixels with this background color |
 
-Jpeg encoding uses `mozjpg` settings, so it has a similiar compression ratio as `webp` for photos.
+Jpeg encoding uses `mozjpg` settings, so it has a similar compression ratio as `webp` for photos.
 If you don't specify a format, the image optimizer will internally try
 `webp` and `jpeg`. The format that produces the smallest image will be chosen and returned.
 
@@ -93,14 +93,14 @@ If you don't specify a format, the image optimizer will internally try
 
 ## Supported Image Formats
 
-On purpose only general purpose image formats are supported:
+Only general purpose image formats are supported:
 
 - `jpeg` (with `mozjpg` settings)
 - `webp` (similar to `jpeg` and always better than `png` or `gif`)
 - `avif` (better compression than above, but slow and in some edge cases I noticed problems with visual quality)
 - coming soon: `jxl` excellent compression, quality and speed
 
-For `jpeg` format the `mozjpg` settings are used which give us a comparable or better compression than `webp`.
+For `jpeg` format, the `mozjpg` settings are used which gives us a comparable or better compression than `webp`.
 Because `jpeg` and `webp` are widespread I recommend not specifying a format and letting the image
 optimizer pick the one that produces the smallest image.
 
@@ -136,7 +136,7 @@ This could even improve quality because in the meantime encoders probably improv
 ## Configuration
 
 The following environment variables must be specified. For `npm start` it is recommended
-to create a `.env` file and also configure AWS credentials
+to create a `.env` file and configure AWS credentials
 
 | Environment Variable      | Explanation                                                                 |
 | ------------------------- | --------------------------------------------------------------------------- |
@@ -150,8 +150,9 @@ to create a `.env` file and also configure AWS credentials
 
 ## URL Signing
 
-URL Signing is done by a CloudFront Function. It needs a secret that is shared between the client who signs
-an URL and CloudFront that verifies the signature. Because CloudFront Functions don't have environment variables,
+URL Signing is done by a CloudFront Function. It needs a secret that is shared between
+the client who signs a URL and CloudFront who verifies the signature.
+Because CloudFront Functions don't have environment variables,
 we embed the secret directly in the source code of the CloudFront Function.
 See [stack.ts](infrastructure/stack.ts) and [viewerRequest.js](infrastructure/cloudFrontFunctions/viewerRequest.js)
 for an implementation that reads it from [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
@@ -160,8 +161,8 @@ You should configure a parameter with the name `image-optimizer-url-signing-secr
 When you use URL signing each image URL must be signed. If you don't use it, you must remove
 the CloudFront Function. If you use it, it is your responsibility to give the URL builder secure access
 to the shared secret. If for example some code (think React) runs in the browser and creates URLs (e.g.
-set image srcset), signing is no longer useful as the secret is visible in the browser and can be easily stolen.
-Only if you can guarantee that all URLs are signed in a secure environment (server) URL signing makes sense.
+setting image srcset), signing is no longer useful as the secret is visible in the browser and can be easily stolen.
+Only if you can guarantee that all URLs are signed in a secure environment (server rendered) signing makes sense.
 
 ## Caveats
 

@@ -75,7 +75,7 @@ Resources:
     Properties:
       FunctionName: !Ref AWS::StackName
       Description: Image Optimizer
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       Timeout: 30
       ReservedConcurrentExecutions: 100 # limit max concurrency to reduce the impact of denial of wallet attacks
       MemorySize: 3008 # the more memory the more CPU power, 3008 seems to be the sweet spot with two fast vCPU
