@@ -19,4 +19,4 @@ async function main() {
 }
 main().catch(console.error)
 
-//  AWS_REGION=eu-west-1 AWS_PROFILE=atombrenner npx ts-node -T infrastructure/signUrl.ts <path> [secret]
+//  AWS_REGION=eu-west-1 AWS_PROFILE=atombrenner npx tsx infrastructure/signUrl.ts <path> [secret]

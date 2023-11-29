@@ -10,8 +10,5 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true
   },
-  "ts-node": {
-    "esm": true
-  },
   "include": ["src", "infrastructure", "lib"]
 }

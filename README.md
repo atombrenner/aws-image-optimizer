@@ -180,7 +180,7 @@ Only if you can guarantee that all URLs are signed in a secure environment (serv
 ## Tools
 
 - [sharp](https://github.com/lovell/sharp) high-performance image processing
-- [ts-node](https://github.com/TypeStrong/ts-node) and [ts-node-dev](https://github.com/wclr/ts-node-dev) for running lambda locally
+- [tsx](https://github.com/privatenumber/tsx) execute typescript scripts (and typescript lambdas)
 - [esbuild](https://esbuild.github.io/) fast Typescript transpiler and bundler
 - [Jest](https://jestjs.io/) for testing
 - [Babel](https://babeljs.io/) as a Jest transformer
