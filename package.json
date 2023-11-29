@@ -4,6 +4,7 @@
   "description": "Optimize images for the web with AWS Lambda and Sharp",
   "license": "GPL-3.0-only",
   "repository": "github:atombrenner/aws-image-optimizer",
+  "type": "module",
   "scripts": {
     "test": "DOTENV_CONFIG_PATH=.env.test jest --setupFiles=dotenv/config",
     "start": "ts-node-dev -r dotenv/config -T src/start.ts",

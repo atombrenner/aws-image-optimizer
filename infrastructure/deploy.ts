@@ -6,14 +6,16 @@ async function main() {
 
   const buffer = readFileSync('./dist/lambda.zip')
 
-  const result = await lambda.send(
-    new UpdateFunctionCodeCommand({ FunctionName: 'web-image-optimizer', ZipFile: buffer })
-  )
+  const command = new UpdateFunctionCodeCommand({
+    FunctionName: 'web-image-optimizer',
+    ZipFile: buffer,
+  })
+  const result = await lambda.send(command)
 
   console.log(`deployed ${result.FunctionName} lambda function`)
 }
 
 main().catch((err) => {
-  console.error(err.message)
+  console.error(err.name ?? '', err.message)
   process.exit(1) // exit the process with an error code
 })

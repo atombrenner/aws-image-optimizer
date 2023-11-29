@@ -1,10 +1,10 @@
 import { Stack } from '@atombrenner/cfn-stack'
 import { readFileSync } from 'fs'
 import { minify } from 'terser'
-import { getSecrets } from './ssm'
+import { getSecrets } from './ssm.ts'
 
 async function main() {
-  const template = readFileSync(`${__dirname}/cloudformation.yaml`, 'utf-8')
+  const template = readRelativeFileSync('./cloudformation.yaml')
   const stack = new Stack({ name: 'web-image-optimizer' })
 
   // get secrets from AWS Systems Manager Parameter Store
@@ -26,7 +26,7 @@ async function main() {
 }
 
 const loadCloudFrontFunction = async (name: string, params: Record<string, string>) => {
-  const js = readFileSync(`${__dirname}/cloudFrontFunctions/${name}`, 'utf-8')
+  const js = readRelativeFileSync(`./cloudFrontFunctions/${name}`)
   const { code } = await minify(js)
   if (!code) throw Error('terser did not return minified code')
 
@@ -36,6 +36,8 @@ const loadCloudFrontFunction = async (name: string, params: Record<string, strin
     code
   )
 }
+
+const readRelativeFileSync = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf-8')
 
 main().catch((err) => {
   console.error(err.name ?? '', err.message)

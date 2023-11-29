@@ -1,15 +1,17 @@
 {
   "extends": "@tsconfig/node20",
   "compilerOptions": {
-    "module": "CommonJS", // TODO: check and update, problems with terser import
-    "moduleResolution": "Node", // TODO: same as above
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
     "declaration": false,
     "sourceMap": true,
     "noEmit": true,
-    "incremental": true,
     "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "tsBuildInfoFile": ".tsbuildinfo"
+    "noUnusedLocals": true
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": ["src", "infrastructure", "lib"]
 }
