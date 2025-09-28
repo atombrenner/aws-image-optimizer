@@ -75,7 +75,7 @@ Resources:
     Properties:
       FunctionName: !Ref AWS::StackName
       Description: Image Optimizer
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Timeout: 30
       ReservedConcurrentExecutions: 100 # limit max concurrency to reduce the impact of denial of wallet attacks
       MemorySize: 3008 # the more memory the more CPU power, 3008 seems to be the sweet spot with two fast vCPU
@@ -83,7 +83,7 @@ Resources:
       Code:
         ZipFile: 'placeholder - do not change'
         # An alternate way to deploy is to upload the lambda zip artifact to an S3 bucket
-        # and reference the versioned artificat from the stack. Then set the version you want
+        # and reference the versioned artifact from the stack. Then set the version you want
         # to deploy and update a stack. Because stack updates always takes several seconds,
         # this is not the fastest way, but the safest way (auditable, rollback to older versions)
         # ---
